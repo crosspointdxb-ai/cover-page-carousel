@@ -25,7 +25,7 @@ const ANG = new Float32Array(N + 1);
     if (t > 11 - b && t < 11 + b) { const a = speed(11 - b), c = speed(11 + b), k = (t - (11 - b)) / (2 * b); return a + (c - a) * k * k * (3 - 2 * k); }
     return speed(t);
   };
-  for (let i = 1; i <= N; i++) ANG[i] = ANG[i - 1] + 0.42 * (vs((i - 1) * DT) + vs(i * DT)) / 2 * DT;
+  for (let i = 1; i <= N; i++) ANG[i] = ANG[i - 1] + 0.336 * (vs((i - 1) * DT) + vs(i * DT)) / 2 * DT;
   const k = (Math.round(ANG[N] / 360) * 360) / ANG[N];
   for (let i = 0; i <= N; i++) ANG[i] *= k;
 })();
@@ -363,7 +363,7 @@ ready(async () => {
     const vf = THREE.MathUtils.degToRad(camera.fov), hf = 2 * Math.atan(Math.tan(vf / 2) * camera.aspect);
     const needW = (R0 + 0.06) * 2, needH = (yMax - yMin) * 1.04;
     const d = Math.max((needW / 2) / Math.tan(hf / 2), (needH / 2) / Math.tan(vf / 2)) + R * 1.1;
-    camBase.d = d; camera.zoom = 1.5; camera.position.copy(target).addScaledVector(dir, d); camera.lookAt(target); camera.updateProjectionMatrix();
+    camBase.d = d; camera.zoom = 1.35; camera.position.copy(target).addScaledVector(dir, d); camera.lookAt(target); camera.updateProjectionMatrix();
     scene.fog.near = d - R * 0.2; scene.fog.far = d + R * 2.6;
   }
   frame();
