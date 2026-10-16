@@ -16,6 +16,9 @@
   function el(tag, cls, html) { var e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; }
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
   function wa(text) { return 'https://wa.me/' + WA + '?text=' + encodeURIComponent(text); }
+  // anonymous answers go to the Cover Page wedding endpoint (same one the villa finder uses), never personal data
+  var API = 'https://cover-agent-wedding.coverpageagency.workers.dev' + (/\.webflow\.io$/.test(location.hostname) ? '/next' : '');
+  function save(kind, data) { try { fetch(API + '/wedding/lead', { method: 'POST', keepalive: true, headers: { 'content-type': 'application/json' }, body: JSON.stringify({ kind: kind, lang: IT ? 'it' : 'en', page: location.pathname, data: data }) }); } catch (e) {} }
   function eur(n) { return n.toLocaleString('en-US').replace(/,/g, IT ? '.' : ',') + ' EUR'; }
 
   var css = `
@@ -137,100 +140,105 @@
 .cpx-agent .entertainment-list{max-height:620px;overflow:auto}
 .cpx-ld{font-size:14px;color:var(--mut);margin:0}
 @media (max-width:900px){.cpx-row3{grid-template-columns:1fr}}
+.cpx-wz{min-height:360px;display:flex;flex-direction:column}
+.cpx-dots{display:flex;gap:6px;margin-bottom:22px}.cpx-dots i{flex:1;height:2px;background:var(--line);transition:background-color 300ms ease-out}.cpx-dots i.on{background:var(--ink)}.cpx-dots i.cur{background:var(--acc)}
+.cpx-qn{font:500 11px/1 Inter,sans-serif;letter-spacing:.2em;color:var(--mut);margin:0 0 12px}
+.cpx-qt{font-family:"Classy Vogue",Georgia,serif;font-size:clamp(26px,2.2vw,40px);line-height:1.12;margin:0 0 20px;animation:cpxInk 420ms cubic-bezier(.23,1,.32,1) both}.cpx-qt span{color:var(--acc)}
+.cpx-big{font-size:clamp(17px,1.2vw,21px);padding:12px 0;resize:none;font-family:Inter,sans-serif}
+.cpx-err{color:var(--acc);font-size:13px;min-height:18px;margin:8px 0 0}
+.cpx-nav{display:flex;align-items:center;gap:12px;margin-top:auto;padding-top:18px}
+.cpx-skip{appearance:none;border:0;background:none;font:500 12px/1 Inter,sans-serif;letter-spacing:.16em;text-transform:uppercase;color:var(--mut);cursor:pointer;margin-left:auto}
+.cpx-nav [hidden],.cpx-send[hidden]{display:none!important}
+.cpx-ttl3{margin:4px 0 18px;line-height:1.1}.cpx-s1{font-family:Hurricane,cursive;font-size:clamp(28px,2.2vw,40px);color:var(--acc)}.cpx-s2{font-family:"Classy Vogue",Georgia,serif;font-size:clamp(24px,2vw,36px);letter-spacing:.06em}
+.cpx-bfr{display:flex;align-items:center;gap:12px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 6px 6px 22px;max-width:640px}
+.cpx-bfr .cpx-bud{border:0;font-family:"Classy Vogue",Georgia,serif;font-size:clamp(26px,2vw,36px);padding:4px 0;flex:1;min-width:0}
+.cpx-eur{font:500 12px Inter,sans-serif;letter-spacing:.16em;color:var(--mut)}
+.cpx-bf .cpx-k{display:block}
+.cpx-res{animation:cpxInk 420ms cubic-bezier(.23,1,.32,1) both}
+.cpx-res .cpx-fr{display:none}.cpx-res .cpx-fr.on{display:block;animation:cpxPop 560ms cubic-bezier(.34,1.56,.64,1) both}
+@keyframes cpxPop{from{opacity:0;transform:translateY(14px) scale(.9)}to{opacity:1;transform:none}}
+.cpx-res .cpx-fr.on img{filter:none;transform:none}.cpx-res .cpx-fr.on .cpx-cap{opacity:1;transform:none}
+.cpx-res .cpx-sheet{background:none;padding:0;gap:clamp(8px,.8vw,14px);grid-template-columns:repeat(auto-fill,minmax(clamp(120px,11vw,190px),1fr))}.cpx-res .cpx-fr{border-radius:4px;box-shadow:0 18px 40px -22px rgba(0,0,0,.45)}
+.cpx-fr img,.cpx-cap{transition-delay:inherit}
+@media (max-width:600px){.cpx-bfr{flex-wrap:wrap;border-radius:18px;padding:10px 14px}.cpx-bfr .cpx-btn{width:100%}}
 @media (max-width:1100px){.cpx-m{grid-template-columns:1fr}}
 @media (max-width:900px){.cpx-n{grid-template-columns:1fr;gap:26px;padding-left:46px}.cpx-n::before{left:15px;right:auto;top:0;bottom:0;width:1px;height:auto}.cpx-nl{left:15px;top:0;width:1px!important;height:var(--w,0%);transition:height 500ms cubic-bezier(.23,1,.32,1)}.cpx-dot{position:absolute;left:-46px;top:-4px}.cpx-t{margin-top:0}.cpx-mo .cpx-chips{flex-direction:row;flex-wrap:wrap}.cpx-sheet{grid-template-columns:repeat(4,minmax(0,1fr))}}
 @media (prefers-reduced-motion:reduce){.cpx *,.cpx *::before,.cpx *::after{animation:none!important;transition:none!important}}
 `;
   var st = el('style'); st.id = 'cpx-css'; st.textContent = css; document.head.appendChild(st);
 
-  /* ---------------- catering: the menu card, written by hand as the couple answers ---------------- */
-  // the questions are the ones from the Cover Page catering brief
+  /* ---------------- catering: the Cover Page catering brief, one question at a time, written on the menu as it goes ---------------- */
   var MENU = IT ? {
-    g: 'Quanti ospiti?', w: 'Dove si sposa? Location o villa', wph: 'Villa sul Lago di Como', dt: 'Quando? Anche indicativo', dph: 'Giugno 2027',
-    s: 'Come volete il servizio?', svc: ['Servito', 'Buffet', 'Family style', 'Isole'],
-    courses: [['Aperitivo', 'Bollicine, finger food, crudo', ['Crudo e burrata', 'Fritto misto', 'Ostriche', 'Franciacorta']], ['Antipasto', 'Vitello tonnato, burrata, tartare', ['Vitello tonnato', 'Carpaccio di manzo', 'Insalata di mare', 'Fiori di zucca']], ['Primo', 'Risotto alla milanese, ravioli', ['Risotto alla milanese', 'Tortelli di zucca', 'Tagliolini al tartufo', 'Risotto al pesce persico']], ['Secondo', 'Pesce di lago, filetto, cotoletta', ['Cotoletta alla milanese', 'Filetto di manzo', 'Branzino al sale', 'Ossobuco']], ['Dolce e torta', 'Torta nuziale, sorbetto, mignon', ['Torta nuziale', 'Tiramisù', 'Panna cotta', 'Sorbetto']], ['Bevande e open bar', 'Vini, cocktail, open bar dopo cena', ['Negroni', 'Spritz', 'Gin tonic', 'Vini lombardi']]],
-    n: 'Esigenze particolari', nph: 'Vegetariani, allergie, bambini',
-    add: 'Aggiungi', title: 'Menu', sub: 'il vostro menu da sogno', guests: 'ospiti', empty: 'rispondete, il menu si scrive da solo', note: 'Nota',
-    send: 'Invia il mio menu', msg: 'Ciao Cover Page, ecco il menu dei nostri sogni'
+    Q: [['guests', 'Quanti ospiti?', 'num', '120', 1], ['where', 'Dove si sposa? Location o villa', 'text', 'Villa sul Lago di Como', 1], ['date', 'Quando? Anche indicativo', 'text', 'Giugno 2027', 0], ['style', 'Come volete il servizio?', 'chips', ['Servito', 'Buffet', 'Family style', 'Isole'], 0], ['aperitivo', 'Aperitivo', 'area', 'Bollicine, finger food, crudo', 0], ['antipasto', 'Antipasto', 'area', 'Vitello tonnato, burrata, tartare', 0], ['primo', 'Primo', 'area', 'Risotto alla milanese, ravioli', 0], ['secondo', 'Secondo', 'area', 'Pesce di lago, filetto, cotoletta', 0], ['dolce', 'Dolce e torta', 'area', 'Torta nuziale, sorbetto, mignon', 0], ['bar', 'Bevande e open bar', 'area', 'Vini, cocktail, open bar dopo cena', 0], ['note', 'Esigenze particolari', 'area', 'Vegetariani, allergie, bambini', 0]],
+    next: 'Avanti', back: 'Indietro', skip: 'Salta', send: 'Invia il mio menu', req: 'Ci serve questa risposta per il preventivo.',
+    t1: 'Il vostro', t2: 'WEDDING DREAM', t3: 'menu', guests: 'ospiti', empty: 'rispondete, il menu si scrive da solo', note: 'Nota', done: 'Il vostro menu è pronto.',
+    msg: 'Ciao Cover Page, ecco il menu dei nostri sogni'
   } : {
-    g: 'How many guests?', w: 'Where is the wedding? Location or villa', wph: 'Villa on Lake Como', dt: 'When? Even approximate', dph: 'June 2027',
-    s: 'How do you want the service?', svc: ['Plated', 'Buffet', 'Family style', 'Food stations'],
-    courses: [['Aperitivo', 'Bubbles, finger food, crudo', ['Crudo and burrata', 'Fritto misto', 'Oysters', 'Franciacorta']], ['Starter', 'Vitello tonnato, burrata, tartare', ['Vitello tonnato', 'Beef carpaccio', 'Seafood salad', 'Courgette flowers']], ['First course', 'Risotto alla milanese, ravioli', ['Risotto alla milanese', 'Pumpkin tortelli', 'Truffle tagliolini', 'Lake perch risotto']], ['Main course', 'Lake fish, fillet, cotoletta', ['Cotoletta alla milanese', 'Beef fillet', 'Salt crusted sea bass', 'Ossobuco']], ['Dessert and cake', 'Wedding cake, sorbet, petit fours', ['Wedding cake', 'Tiramisù', 'Panna cotta', 'Sorbet']], ['Drinks and open bar', 'Wines, cocktails, open bar after dinner', ['Negroni', 'Spritz', 'Gin tonic', 'Lombardy wines']]],
-    n: 'Special requirements', nph: 'Vegetarians, allergies, children',
-    add: 'Add', title: 'Menu', sub: 'your dream menu', guests: 'guests', empty: 'answer, and the menu writes itself', note: 'Note',
-    send: 'Send my menu', msg: 'Hello Cover Page, here is our dream menu'
+    Q: [['guests', 'How many guests?', 'num', '120', 1], ['where', 'Where is the wedding? Location or villa', 'text', 'Villa on Lake Como', 1], ['date', 'When? Even approximate', 'text', 'June 2027', 0], ['style', 'How do you want the service?', 'chips', ['Plated', 'Buffet', 'Family style', 'Food stations'], 0], ['aperitivo', 'Aperitivo', 'area', 'Bubbles, finger food, crudo', 0], ['antipasto', 'Starter', 'area', 'Vitello tonnato, burrata, tartare', 0], ['primo', 'First course', 'area', 'Risotto alla milanese, ravioli', 0], ['secondo', 'Main course', 'area', 'Lake fish, fillet, cotoletta', 0], ['dolce', 'Dessert and cake', 'area', 'Wedding cake, sorbet, petit fours', 0], ['bar', 'Drinks and open bar', 'area', 'Wines, cocktails, open bar after dinner', 0], ['note', 'Special requirements', 'area', 'Vegetarians, allergies, children', 0]],
+    next: 'Next', back: 'Back', skip: 'Skip', send: 'Send my menu', req: 'We need this answer for the quote.',
+    t1: 'Your', t2: 'WEDDING DREAM', t3: 'menu', guests: 'guests', empty: 'answer, and the menu writes itself', note: 'Note', done: 'Your menu is ready.',
+    msg: 'Hello Cover Page, here is our dream menu'
   };
   // a pen script for everything the couple writes
   (function () { if (document.getElementById('cpx-hand')) return; var l = el('link'); l.id = 'cpx-hand'; l.rel = 'stylesheet'; l.href = 'https://fonts.googleapis.com/css2?family=Homemade+Apple&display=swap'; document.head.appendChild(l); })();
-  function field(label, ph, val, on) {
-    var w = el('label', 'cpx-f'); w.appendChild(el('span', 'cpx-k', esc(label)));
-    var i = el('input', 'cpx-in'); i.placeholder = ph; i.value = val; i.maxLength = 60; i.addEventListener('input', function () { on(i.value); }); w.appendChild(i); return w;
-  }
   function menu(app, quote) {
-    var S = { g: 120, w: '', dt: '', s: -1, c: 0, d: MENU.courses.map(function () { return []; }), live: '', n: '' };
-    var seen = {}; // what is already written on the card, so only new words get the pen stroke
-    var wrap = el('div', 'cpx-m'), ctl = el('div', 'cpx-ctl'), paper = el('div', 'cpx-paper');
+    var Q = MENU.Q, A = {}, i = 0, seen = {};
+    var wrap = el('div', 'cpx-m'), ctl = el('div', 'cpx-ctl cpx-wz'), paper = el('div', 'cpx-paper');
     wrap.append(ctl, paper); app.appendChild(wrap);
-    // guests, where, when
-    var top3 = el('div', 'cpx-row3');
-    var gb = el('div'); gb.appendChild(el('p', 'cpx-k', esc(MENU.g)));
-    var gr = el('div', 'cpx-guests'), minus = el('button', 'cpx-step', '&minus;'), plus = el('button', 'cpx-step', '+'), gn = el('span', 'cpx-gn');
-    minus.type = plus.type = 'button'; minus.setAttribute('aria-label', '-10'); plus.setAttribute('aria-label', '+10');
-    gr.append(minus, gn, plus); gb.appendChild(gr);
-    minus.onclick = function () { S.g = Math.max(10, S.g - 10); draw(); };
-    plus.onclick = function () { S.g = Math.min(600, S.g + 10); draw(); };
-    top3.append(gb, field(MENU.w, MENU.wph, '', function (v) { S.w = v.trim(); draw(); }), field(MENU.dt, MENU.dph, '', function (v) { S.dt = v.trim(); draw(); }));
-    ctl.appendChild(top3);
-    // service
-    var sb = el('div'); sb.appendChild(el('p', 'cpx-k', esc(MENU.s))); var sc = el('div', 'cpx-chips'); sb.appendChild(sc); ctl.appendChild(sb);
-    MENU.svc.forEach(function (n, i) { var b = el('button', 'cpx-chip', esc(n)); b.type = 'button'; b.onclick = function () { S.s = S.s === i ? -1 : i; draw(); }; sc.appendChild(b); });
-    // courses
-    var cb = el('div'), tabs = el('div', 'cpx-tabs'), dishes = el('div', 'cpx-chips'); tabs.setAttribute('role', 'tablist'); dishes.style.marginTop = '16px';
-    cb.append(tabs, dishes); ctl.appendChild(cb);
-    MENU.courses.forEach(function (c, i) { var t = el('button', 'cpx-tab', esc(c[0])); t.type = 'button'; t.setAttribute('role', 'tab'); t.onclick = function () { S.c = i; S.live = ''; inp.value = ''; inp.placeholder = c[1]; draw(); }; tabs.appendChild(t); });
-    var own = el('form', 'cpx-own'), inp = el('input', 'cpx-in'), add = el('button', 'cpx-add', esc(MENU.add));
-    inp.placeholder = MENU.courses[0][1]; inp.maxLength = 60; inp.setAttribute('aria-label', MENU.courses[0][0]); add.type = 'submit'; own.append(inp, add); cb.appendChild(own);
-    inp.addEventListener('input', function () { S.live = inp.value.trim(); draw(); });
-    own.onsubmit = function (e) { e.preventDefault(); var v = inp.value.trim(); if (!v) return; var l = S.d[S.c]; if (l.indexOf(v) < 0 && l.length < 6) l.push(v); inp.value = ''; S.live = ''; draw(); };
-    ctl.appendChild(field(MENU.n, MENU.nph, '', function (v) { S.n = v.trim(); draw(); }));
-    // send
-    var send = el('div', 'cpx-send'), go = el('a', 'cpx-btn', esc(MENU.send)); go.target = '_blank'; go.rel = 'noopener';
-    send.appendChild(go); if (quote) send.appendChild(quote); ctl.appendChild(send);
-
-    function hw(text, key, cls) { var fresh = !seen[key]; seen[key] = 1; return '<span class="cpx-hw' + (cls ? ' ' + cls : '') + (fresh ? ' cpx-write' : '') + '">' + esc(text) + '</span>'; }
-    function draw() {
-      gn.textContent = S.g;
-      [].forEach.call(sc.children, function (b, i) { b.setAttribute('aria-pressed', i === S.s); });
-      [].forEach.call(tabs.children, function (t, i) { t.setAttribute('aria-selected', i === S.c); t.textContent = MENU.courses[i][0] + (S.d[i].length ? ' · ' + S.d[i].length : ''); });
-      dishes.innerHTML = '';
-      MENU.courses[S.c][2].concat(S.d[S.c].filter(function (x) { return MENU.courses[S.c][2].indexOf(x) < 0; })).forEach(function (d) {
-        var b = el('button', 'cpx-chip', esc(d)); b.type = 'button'; b.setAttribute('aria-pressed', S.d[S.c].indexOf(d) >= 0);
-        b.onclick = function () { var l = S.d[S.c], k = l.indexOf(d); if (k >= 0) l.splice(k, 1); else if (l.length < 6) l.push(d); draw(); };
-        dishes.appendChild(b);
-      });
-      var meta = [S.g + ' ' + MENU.guests].concat(S.w ? [S.w] : [], S.dt ? [S.dt] : [], S.s >= 0 ? [MENU.svc[S.s]] : []);
-      var h = '<p class="cpx-pt">' + MENU.title + '</p><p class="cpx-ps">' + MENU.sub + '</p><p class="cpx-pg">' + meta.map(function (m, i) { return hw(m, 'm' + i + m); }).join('<i> · </i>') + '</p>';
-      var any = false;
-      MENU.courses.forEach(function (c, i) {
-        var live = i === S.c && S.live && S.d[i].indexOf(S.live) < 0;
-        if (!S.d[i].length && !live) return; any = any || S.d[i].length > 0;
-        h += '<div class="cpx-co"><h5>' + esc(c[0]) + '</h5>' + S.d[i].map(function (d) { return '<button type="button" class="cpx-dish" data-c="' + i + '" data-d="' + esc(d) + '">' + hw(d, 'd' + i + d) + '</button>'; }).join('') +
-          (live ? '<span class="cpx-dish cpx-live">' + esc(S.live) + '</span>' : '') + '</div>';
-      });
-      if (S.n) h += '<p class="cpx-note"><b>' + MENU.note + '</b> ' + hw(S.n, 'n' + S.n) + '</p>';
-      if (!any && !S.live) h += '<span class="cpx-empty">' + MENU.empty + '</span>';
-      paper.innerHTML = h;
-      [].forEach.call(paper.querySelectorAll('button.cpx-dish'), function (b) { b.onclick = function () { var l = S.d[+b.dataset.c], k = l.indexOf(b.dataset.d); if (k >= 0) l.splice(k, 1); delete seen['d' + b.dataset.c + b.dataset.d]; draw(); }; });
-      var txt = MENU.msg + '\n' + meta.join(', ') + '\n' + MENU.courses.map(function (c, i) { return S.d[i].length ? c[0] + ': ' + S.d[i].join(', ') : ''; }).filter(Boolean).join('\n') + (S.n ? '\n' + MENU.n + ': ' + S.n : '');
-      go.href = wa(txt); go.setAttribute('aria-disabled', !any);
+    var dots = el('div', 'cpx-dots'); Q.forEach(function () { dots.appendChild(el('i')); }); ctl.appendChild(dots);
+    var stage = el('div', 'cpx-q'); ctl.appendChild(stage);
+    var err = el('p', 'cpx-err'); ctl.appendChild(err);
+    var nav = el('div', 'cpx-nav'), back = el('button', 'cpx-btn cpx-ghost', esc(MENU.back)), skip = el('button', 'cpx-skip', esc(MENU.skip)), next = el('button', 'cpx-btn', esc(MENU.next));
+    back.type = skip.type = next.type = 'button'; nav.append(back, next, skip); ctl.appendChild(nav);
+    var send = el('div', 'cpx-send'), go = el('a', 'cpx-btn', esc(MENU.send)); go.target = '_blank'; go.rel = 'noopener'; send.appendChild(go); if (quote) send.appendChild(quote); ctl.appendChild(send);
+    go.addEventListener('click', function () { save('menu', A); });
+    var field;
+    function ask() {
+      err.textContent = ''; var q = Q[i];
+      [].forEach.call(dots.children, function (d, k) { d.className = k < i ? 'on' : k === i ? 'cur' : ''; });
+      var done = i >= Q.length;
+      ctl.classList.toggle('cpx-fin', done); nav.hidden = done; send.hidden = !done;
+      if (done) { stage.innerHTML = '<p class="cpx-qt">' + MENU.done + '</p>'; draw(); return; }
+      stage.innerHTML = '<p class="cpx-qn">' + (i + 1) + ' / ' + Q.length + '</p><p class="cpx-qt">' + esc(q[1]) + (q[4] ? ' <span>*</span>' : '') + '</p>';
+      if (q[2] === 'chips') {
+        field = el('div', 'cpx-chips');
+        q[3].forEach(function (c) { var b = el('button', 'cpx-chip', esc(c)); b.type = 'button'; b.setAttribute('aria-pressed', A[q[0]] === c); b.onclick = function () { A[q[0]] = c; draw(); setTimeout(function () { i++; ask(); }, 260); }; field.appendChild(b); });
+      } else {
+        field = el(q[2] === 'area' ? 'textarea' : 'input', 'cpx-in cpx-big'); field.placeholder = q[3]; field.value = A[q[0]] || '';
+        if (q[2] === 'num') { field.type = 'number'; field.min = 1; field.inputMode = 'numeric'; } else field.maxLength = 160;
+        if (q[2] === 'area') field.rows = 2;
+        field.addEventListener('input', function () { A[q[0]] = field.value.trim(); draw(); });
+        field.addEventListener('keydown', function (e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); go1(); } });
+      }
+      stage.appendChild(field); back.hidden = i === 0; skip.hidden = !!q[4] || q[2] === 'chips' && false;
+      if (field.focus && i > 0) try { field.focus({ preventScroll: true }); } catch (e) {}
+      draw();
     }
-    draw();
+    function go1() { var q = Q[i]; if (q[4] && !A[q[0]]) { err.textContent = MENU.req; return; } i++; ask(); }
+    next.onclick = go1; skip.onclick = function () { delete A[Q[i][0]]; i++; ask(); }; back.onclick = function () { if (i > 0) { i--; ask(); } };
+    function hw(text, key) { var fresh = !seen[key]; seen[key] = 1; return '<span class="cpx-hw' + (fresh ? ' cpx-write' : '') + '">' + esc(text) + '</span>'; }
+    function list(v) { return String(v).split(/,|\n/).map(function (x) { return x.trim(); }).filter(Boolean); }
+    function draw() {
+      var meta = [];
+      if (A.guests) meta.push(A.guests + ' ' + MENU.guests); if (A.where) meta.push(A.where); if (A.date) meta.push(A.date); if (A.style) meta.push(A.style);
+      var h = '<p class="cpx-ttl3"><span class="cpx-s1">' + MENU.t1 + '</span> <span class="cpx-s2">' + MENU.t2 + '</span> <span class="cpx-s1">' + MENU.t3 + '</span></p>';
+      h += '<p class="cpx-pg">' + meta.map(function (m) { return hw(m, 'm' + m); }).join('<i> · </i>') + '</p>';
+      var any = false;
+      Q.slice(4, 10).forEach(function (q) {
+        var v = A[q[0]]; if (!v) return; any = true;
+        h += '<div class="cpx-co"><h5>' + esc(q[1]) + '</h5>' + list(v).map(function (d) { return '<span class="cpx-dish">' + hw(d, q[0] + d) + '</span>'; }).join('') + '</div>';
+      });
+      if (A.note) h += '<p class="cpx-note"><b>' + MENU.note + '</b> ' + hw(A.note, 'n' + A.note) + '</p>';
+      if (!any && !meta.length) h += '<span class="cpx-empty">' + MENU.empty + '</span>';
+      paper.innerHTML = h;
+      go.href = wa(MENU.msg + '\n' + meta.join(', ') + '\n' + Q.slice(4).map(function (q) { return A[q[0]] ? q[1] + ': ' + A[q[0]] : ''; }).filter(Boolean).join('\n'));
+    }
+    ask();
   }
 
-  /* ---------------- photo and video: every frame is one deliverable; the budget switches them on or off ---------------- */
-  // packages from coverpageagency.com/foto-video-matrimonio-milano. Each frame keeps its own caption; v = a film item
+  /* ---------------- photo and video: the couple writes a budget, presses "see all you get", the deliverables pop ---------------- */
   var FILM = IT ? {
-    k: 'Il tuo budget foto e video', send: 'Ricevi la proposta', more: 'Vedi i pacchetti', msg: 'Ciao Cover Page, il nostro budget foto e video è',
+    k: 'Il tuo budget foto e video', ph: 'Il tuo budget in euro, es. 1500', see: 'Vedi tutto ciò che ottieni', change: 'Cambia budget', send: 'Ricevi la proposta', more: 'Vedi i pacchetti', msg: 'Ciao Cover Page, il nostro budget foto e video è',
     below: 'Sotto i nostri pacchetti: il primo parte da 790 EUR.', pop: 'Il più scelto', link: '/it/foto-video-matrimonio-milano',
     items: [['Foto editate'], ['Color grading e ritocco'], ['Album digitale'], ['Sneak peek in giornata'], ['Film del matrimonio', 1], ['Sceneggiato, sound design', 1], ['Teaser', 1], ['Fino a 7 angolazioni', 1], ['Versione social', 1], ['Più operatori'], ['Drone', 1], ['Più punti di vista']],
     pk: [
@@ -240,7 +248,7 @@
       { n: 'Su misura', p: 2500, on: [0, 1, 4, 5, 8, 9, 10, 11], d: 'Il nostro pacchetto più alto più un progetto su misura: più operatori per foto, video e drone, più punti di vista, più profondità in ciò che ricevi. Più invitati richiedono più talenti.' }
     ]
   } : {
-    k: 'Your photo and video budget', send: 'Get the proposal', more: 'See the packages', msg: 'Hello Cover Page, our photo and video budget is',
+    k: 'Your photo and video budget', ph: 'Your budget in euro, e.g. 1500', see: 'See all you get', change: 'Change budget', send: 'Get the proposal', more: 'See the packages', msg: 'Hello Cover Page, our photo and video budget is',
     below: 'Below our packages: the first one starts at 790 EUR.', pop: 'Most popular', link: 'https://www.coverpageagency.com/foto-video-matrimonio-milano',
     items: [['Edited photos'], ['Colour graded and retouched'], ['Digital album'], ['Same day sneak peek'], ['Wedding film', 1], ['Scripted, sound design', 1], ['Wedding teaser', 1], ['Up to 7 camera angles', 1], ['Social cut', 1], ['More operators'], ['Drone', 1], ['More points of view']],
     pk: [
@@ -251,35 +259,36 @@
     ]
   };
   function film(app, quote) {
-    var MIN = 500, MAX = 4000, PK = FILM.pk;
-    var top = el('div', 'cpx-f-top'), kb = el('div'); kb.appendChild(el('p', 'cpx-k', FILM.k)); var bud = el('div', 'cpx-bud'); kb.appendChild(bud); top.appendChild(kb); app.appendChild(top);
-    var r = el('input', 'cpx-range'); r.type = 'range'; r.min = MIN; r.max = MAX; r.step = 50; r.value = 1000; r.setAttribute('aria-label', FILM.k); app.appendChild(r);
-    app.appendChild(el('div', 'cpx-ticks', '<span>500</span><span>790</span><span>990</span><span>1,490</span><span>2,500+</span><span>4,000</span>'));
-    var pk = el('div', 'cpx-pk'), pn = el('p', 'cpx-pkn'), pp = el('span', 'cpx-pkp'), pd = el('p', 'cpx-pkd'); pk.append(pn, pp, pd); app.appendChild(pk);
-    var sheet = el('div', 'cpx-sheet'); app.appendChild(sheet);
-    var frames = FILM.items.map(function (it, i) {
-      var f = el('div', 'cpx-fr' + (it[1] ? ' mv' : '')), im = el('img'); im.alt = ''; im.loading = 'lazy'; im.decoding = 'async'; im.src = BASE + 'wed/' + (i + 1) + '.webp';
-      f.append(im, el('b', 'cpx-cap', esc(it[0]))); sheet.appendChild(f); return f;
+    var PK = FILM.pk;
+    var f = el('form', 'cpx-bf'), lab = el('label', 'cpx-k', esc(FILM.k)), row = el('div', 'cpx-bfr'), inp = el('input', 'cpx-in cpx-bud'), btn = el('button', 'cpx-btn', esc(FILM.see));
+    inp.type = 'number'; inp.min = 0; inp.step = 50; inp.inputMode = 'numeric'; inp.placeholder = FILM.ph; inp.setAttribute('aria-label', FILM.k); btn.type = 'submit';
+    row.append(el('span', 'cpx-eur', 'EUR'), inp, btn); f.append(lab, row); app.appendChild(f);
+    var res = el('div', 'cpx-res'); res.hidden = true; app.appendChild(res);
+    var pk = el('div', 'cpx-pk'), pn = el('p', 'cpx-pkn'), pp = el('span', 'cpx-pkp'), pd = el('p', 'cpx-pkd'); pk.append(pn, pp, pd); res.appendChild(pk);
+    var sheet = el('div', 'cpx-sheet'); res.appendChild(sheet);
+    var frames = FILM.items.map(function (it, k) {
+      var fr = el('div', 'cpx-fr' + (it[1] ? ' mv' : '')), im = el('img'); im.alt = ''; im.loading = 'lazy'; im.decoding = 'async'; im.src = BASE + 'wed/' + (k + 1) + '.webp';
+      fr.append(im, el('b', 'cpx-cap', esc(it[0]))); sheet.appendChild(fr); return fr;
     });
-    var send = el('div', 'cpx-send'), go = el('a', 'cpx-btn', esc(FILM.send)), more = el('a', 'cpx-more', esc(FILM.more));
-    go.target = '_blank'; go.rel = 'noopener'; more.href = FILM.link;
-    send.append(go); if (quote) send.appendChild(quote); send.appendChild(more); app.appendChild(send);
-    var last = -2;
+    var sendRow = el('div', 'cpx-send'), go = el('a', 'cpx-btn', esc(FILM.send)), chg = el('button', 'cpx-btn cpx-ghost', esc(FILM.change)), more = el('a', 'cpx-more', esc(FILM.more));
+    go.target = '_blank'; go.rel = 'noopener'; more.href = FILM.link; chg.type = 'button';
+    sendRow.append(go, chg); if (quote) sendRow.appendChild(quote); sendRow.appendChild(more); res.appendChild(sendRow);
     function tier(b) { var t = -1; for (var k = 0; k < PK.length; k++) if (b >= PK[k].p) t = k; return t; }
-    function draw() {
-      var b = +r.value, t = tier(b), P = PK[t];
-      r.style.setProperty('--p', ((b - MIN) / (MAX - MIN) * 100) + '%');
-      bud.textContent = (b >= MAX ? eur(MAX) + '+' : eur(b));
-      if (t !== last) {
-        pn.innerHTML = t < 0 ? '' : esc(P.n) + (P.pop ? ' <em>' + FILM.pop + '</em>' : ''); pp.textContent = t < 0 ? '' : (t === 3 ? eur(PK[2].p) + ' +' : eur(P.p));
-        pd.textContent = t < 0 ? FILM.below : P.d;
-        var k = 0;
-        frames.forEach(function (f, i) { var on = t >= 0 && P.on.indexOf(i) >= 0; if (on !== f.classList.contains('on')) { f.style.transitionDelay = (RM ? 0 : (k++) * 50) + 'ms'; f.classList.toggle('on', on); } });
-        last = t;
-      }
-      go.href = wa(FILM.msg + ' ' + bud.textContent + (t >= 0 ? ' (' + P.n + ')' : ''));
-    }
-    r.addEventListener('input', draw); draw();
+    f.onsubmit = function (e) {
+      e.preventDefault(); var b = Math.round(+inp.value); if (!b || b < 1) { inp.focus(); return; }
+      var t = tier(b), P = PK[t];
+      save('budget', { budget: b, pick: t < 0 ? 'under' : P.n });
+      pn.innerHTML = t < 0 ? esc(eur(b)) : esc(P.n) + (P.pop ? ' <em>' + FILM.pop + '</em>' : ''); pp.textContent = t < 0 ? '' : (t === 3 ? eur(PK[2].p) + ' +' : eur(P.p));
+      pd.textContent = t < 0 ? FILM.below : P.d;
+      frames.forEach(function (fr) { fr.classList.remove('on'); });
+      res.hidden = false; f.classList.add('cpx-used');
+      var k = 0;
+      requestAnimationFrame(function () { requestAnimationFrame(function () {
+        frames.forEach(function (fr, n) { if (t >= 0 && P.on.indexOf(n) >= 0) { fr.style.animationDelay = (RM ? 0 : 120 + (k++) * 120) + 'ms'; fr.classList.add('on'); } });
+      }); });
+      go.href = wa(FILM.msg + ' ' + eur(b) + (t >= 0 ? ' (' + P.n + ')' : ''));
+    };
+    chg.onclick = function () { res.hidden = true; f.classList.remove('cpx-used'); inp.focus(); };
   }
 
   /* map credit in the villa finder: shown, then folded after five seconds into an (i) that opens it again
@@ -312,7 +321,7 @@
     var tl = el('div', 'cpx-n'), line = el('div', 'cpx-nl'); tl.appendChild(line); app.appendChild(tl);
     var cols = NIGHT.m.map(function (m, i) {
       var c = el('div', 'cpx-mo'); c.appendChild(el('div', 'cpx-dot', String(i + 1)));
-      c.appendChild(el('p', 'cpx-t', m[0])); c.appendChild(el('p', 'cpx-mn', esc(m[1])));
+      c.appendChild(el('p', 'cpx-mn', esc(m[1])));
       var ch = el('div', 'cpx-chips'); m[2].forEach(function (a) { var b = el('button', 'cpx-chip', esc(a)); b.type = 'button'; b.onclick = function () { pick[i] = pick[i] === a ? null : a; draw(i); }; ch.appendChild(b); });
       c.appendChild(ch); var pk = el('p', 'cpx-pick'); c.appendChild(pk); tl.appendChild(c); return { c: c, ch: ch, pk: pk };
     });
@@ -328,7 +337,7 @@
       });
       tl.style.setProperty('--w', lastOn < 0 ? '0%' : ((lastOn + 0.5) / NIGHT.m.length * 100) + '%');
       var any = pick.some(Boolean);
-      go.href = wa(NIGHT.msg + '\n' + NIGHT.m.map(function (m, i) { return pick[i] ? m[0] + ' ' + m[1] + ': ' + pick[i] : ''; }).filter(Boolean).join('\n'));
+      go.onclick = function () { save('night', pick); }; go.href = wa(NIGHT.msg + '\n' + NIGHT.m.map(function (m, i) { return pick[i] ? m[1] + ': ' + pick[i] : ''; }).filter(Boolean).join('\n'));
       go.setAttribute('aria-disabled', !any);
     }
     draw();

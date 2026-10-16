@@ -248,26 +248,9 @@ ready(async () => {
     }
     shells(it, wedBand);
   })();
-  const R2 = R * 0.6, H2 = CH * 0.42;
-  const tier2 = new THREE.Mesh(new THREE.CylinderGeometry(R2, R2, H2, 128), icing);
-  tier2.position.y = top + 0.05 + H2 / 2; tier2.castShadow = true; tier2.receiveShadow = true; cake.add(tier2);
-  border(R2 + 0.03, top + 0.05 + 0.008, 0.1, cake, 0.7);
-  border(R2 - 0.01, top + 0.05 + H2 + 0.006, 0.1, cake, 0.45);
-  const topY = top + 0.05 + H2;
-
-  // "Viva gli sposi" in script on the top tier, facing the visitor
-  (() => {
-    const W = 4096, Hh = 512, c = document.createElement('canvas'); c.width = W; c.height = Hh; const g = c.getContext('2d');
-    // the script stays facing the visitor while the cake turns behind it; no rose ever sits on the band
-    g.textAlign = 'center'; g.textBaseline = 'middle'; let fs = 330;
-    do { g.font = `400 ${fs}px Hurricane, "Great Vibes", cursive`; fs -= 10; } while (g.measureText('Viva gli sposi').width > W * 0.36 && fs > 120);
-    g.fillStyle = 'rgba(120,60,30,.18)'; g.fillText('Viva gli sposi', W / 2 + 4, Hh / 2 + 6);
-    g.fillStyle = '#e25b1e'; g.fillText('Viva gli sposi', W / 2, Hh / 2);
-    const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8;
-    const band = new THREE.Mesh(new THREE.CylinderGeometry(R2 + 0.006, R2 + 0.006, H2 * 0.56, 128, 1, true),
-      new THREE.MeshStandardMaterial({ map: t, transparent: true, depthWrite: false, roughness: 0.5 }));
-    band.position.y = top + 0.05 + H2 * 0.42; band.rotation.y = Math.PI; band.renderOrder = 3; scene.add(band);
-  })();
+  // top tier and its "Viva gli sposi" removed on request: the couple now stands on the card tier lid
+  const R2 = R * 0.6;
+  const topY = top + 0.05;
 
   // sugar roses and leaves
   const petalMat = new THREE.MeshPhysicalMaterial({ color: 0xffffff, vertexColors: true, roughness: 0.55, sheen: 1, sheenColor: new THREE.Color(0xfff3ee), sheenRoughness: 0.4, side: THREE.DoubleSide });
@@ -297,7 +280,7 @@ ready(async () => {
   const spots = [];
   // cascade from the top tier edge over the card tier lid
   // two cascades on the sides: a crown on the top tier rim, then down onto the card tier lid (never over the script band)
-  for (const side of [Math.PI / 2, -Math.PI / 2]) for (let k = 0; k < 11; k++) { const s = k / 10; const a = side + 0.3 - s * 0.6; const onTop = s < 0.4; const rr = onTop ? R2 - 0.07 : R + 0.02; const y = onTop ? topY + 0.01 : top + 0.06; spots.push([Math.sin(a) * rr, y, Math.cos(a) * rr, (onTop ? 0.55 : 0.75) + 0.4 * Math.sin(k * 1.7) ** 2]); }
+  for (const side of [Math.PI / 2, -Math.PI / 2]) for (let k = 0; k < 11; k++) { const s = k / 10; const a = side + 0.3 - s * 0.6; const onTop = s < 0.4; const rr = onTop ? R - 0.12 : R + 0.02; const y = top + 0.06; spots.push([Math.sin(a) * rr, y, Math.cos(a) * rr, (onTop ? 0.55 : 0.75) + 0.4 * Math.sin(k * 1.7) ** 2]); }
   // cluster on the bottom tier
   for (let k = 0; k < 9; k++) { const a = -0.55 + k * 0.13; const rr = R0 - 0.06 - (k % 2) * 0.05; spots.push([Math.sin(a) * rr, -top - 0.04, Math.cos(a) * rr, 0.7 + 0.45 * ((k * 7) % 5) / 5]); }
   // a few behind the couple
@@ -418,8 +401,8 @@ ready(async () => {
   const tie = new THREE.Mesh(new THREE.BoxGeometry(0.05 * S, 0.018 * S, 0.012 * S), pm(0x0d0e12, { transparent: true, opacity: 0 })); tie.position.set(0, 0.812 * S, 0.068 * S); groom.add(tie);
   const flower = new THREE.Mesh(new THREE.SphereGeometry(0.013 * S, 12, 10), pm(0xffffff, { transparent: true, opacity: 0 })); flower.position.set(0.055 * S, 0.74 * S, 0.085 * S); groom.add(flower);
 
-  couple.position.y = topY;
-  const halo = new THREE.PointLight(0xfff8f0, 0.7, 1.4, 2); halo.position.set(0, topY + 0.5 * S, 0.3); scene.add(halo);
+  couple.position.y = topY; couple.scale.setScalar(0.75);
+  const halo = new THREE.PointLight(0xfff8f0, 0.7, 1.4, 2); halo.position.set(0, topY + 0.38 * S, 0.3); scene.add(halo);
 
   // colours for the dressing transition
   const C = (h) => new THREE.Color(h);
@@ -440,7 +423,7 @@ ready(async () => {
   const fill = new THREE.DirectionalLight(0xffffff, 0.35); fill.position.set(-2, 0.6, 2.5); scene.add(fill);
 
   // framing: the first tier with its cards, the top tier and the couple
-  const yMin = -top - 0.06 - H0 - 0.16, yMax = topY + S * 1.0;
+  const yMin = -top - 0.06 - H0 - 0.16, yMax = topY + S * 0.78;
   const target = new THREE.Vector3(0, top * 0.75, 0);
   const dir = new THREE.Vector3(0, 0.15, 1).normalize();
   const camBase = { d: 4 };
@@ -450,7 +433,10 @@ ready(async () => {
     const vf = THREE.MathUtils.degToRad(camera.fov), hf = 2 * Math.atan(Math.tan(vf / 2) * camera.aspect);
     const needW = (R0 + 0.06) * 2, needH = (yMax - yMin) * 1.04;
     const d = Math.max((needW / 2) / Math.tan(hf / 2), (needH / 2) / Math.tan(vf / 2)) + R * 1.1;
-    camBase.d = d; camera.zoom = 1.35; camera.position.copy(target).addScaledVector(dir, d); camera.lookAt(target); camera.updateProjectionMatrix();
+    camBase.d = d; camera.zoom = 1.62; camera.position.copy(target).addScaledVector(dir, d); camera.lookAt(target);
+    // desktop: the cake sits 20% to the right, clear of the title, so the cards read better
+    if (w >= 992) camera.setViewOffset(w, h, -0.2 * w, 0, w, h); else camera.clearViewOffset();
+    camera.updateProjectionMatrix();
     scene.fog.near = d - R * 0.2; scene.fog.far = d + R * 2.6;
   }
   frame();
@@ -467,6 +453,14 @@ ready(async () => {
     let f = 0; setInterval(() => { f = (f + 1) % 4; gr.style.backgroundPosition = `${f * 37}px ${f * 59}px`; }, 90);
   })();
 
+  // faded black edges on the whole hero
+  (() => {
+    const hero = stage.closest('.cpw-hero') || stage.parentElement; if (!hero || hero.querySelector('.cpw-vig')) return;
+    const v = document.createElement('div'); v.className = 'cpw-vig'; v.setAttribute('aria-hidden', 'true');
+    Object.assign(v.style, { position: 'absolute', inset: '0', zIndex: '3', pointerEvents: 'none',
+      background: 'linear-gradient(90deg,#0b0e1a 0%,rgba(11,14,26,0) 14%,rgba(11,14,26,0) 86%,#0b0e1a 100%),linear-gradient(180deg,#0b0e1a 0%,rgba(11,14,26,0) 12%,rgba(11,14,26,0) 82%,#0b0e1a 100%)' });
+    hero.appendChild(v);
+  })();
   const shade = stage.querySelector('.cpw-shade');
   if (shade) shade.style.top = (1 - EXT) * 100 + '%';
   // soft top and bottom edges on everything that extends past the stage, so no hard band shows on any screen
