@@ -127,6 +127,8 @@
 .cpx-cap{position:absolute;left:0;right:0;bottom:0;padding:28px 8px 8px;background:linear-gradient(transparent,rgba(0,0,0,.78));color:#fff;font:500 clamp(10px,.75vw,13px)/1.25 Inter,sans-serif;opacity:0;transform:translateY(6px);transition:opacity 400ms ease-out,transform 400ms cubic-bezier(.23,1,.32,1);transition-delay:inherit}
 .cpx-fr.on .cpx-cap{opacity:1;transform:none}
 .cpx-fr img{transition-delay:inherit}
+.cpw-mapw p.cr.cpx-crx{display:none}
+.cpx-cri{appearance:none;width:22px;height:22px;border-radius:50%;border:1px solid rgba(20,19,17,.25);background:#fff;color:rgba(20,19,17,.6);font:italic 600 12px/1 Georgia,serif;cursor:pointer;padding:0;margin:6px 0 0}
 .cpx-agent{margin-top:34px;padding-top:26px;border-top:1px solid var(--line)}
 .cpx-agent.cpx-idle .entertainment-list,.cpx-agent.cpx-idle .w-dyn-empty{display:none}
 .cpx-agent .entertainment-list{max-height:620px;overflow:auto}
@@ -222,28 +224,29 @@
     draw();
   }
 
-  /* ---------------- photo and video: more budget, more frames revealed ---------------- */
-  // packages from coverpageagency.com/foto-video-matrimonio-milano; each caption is written on its frame. v = a film item
+  /* ---------------- photo and video: every frame is one deliverable; the budget switches them on or off ---------------- */
+  // packages from coverpageagency.com/foto-video-matrimonio-milano. Each frame keeps its own caption; v = a film item
   var FILM = IT ? {
     k: 'Il tuo budget foto e video', send: 'Ricevi la proposta', more: 'Vedi i pacchetti', msg: 'Ciao Cover Page, il nostro budget foto e video è',
     below: 'Sotto i nostri pacchetti: il primo parte da 790 EUR.', pop: 'Il più scelto', link: '/it/foto-video-matrimonio-milano',
+    items: [['Foto editate'], ['Color grading e ritocco'], ['Album digitale'], ['Sneak peek in giornata'], ['Film del matrimonio', 1], ['Sceneggiato, sound design', 1], ['Teaser', 1], ['Fino a 7 angolazioni', 1], ['Versione social', 1], ['Più operatori'], ['Drone', 1], ['Più punti di vista']],
     pk: [
-      { n: 'Fotografia', p: 790, d: '300 foto editate, un album digitale e uno sneak peek in giornata.', f: [['300 foto editate'], ['Color grading e ritocco'], ['1 album digitale'], ['Sneak peek: 3 foto in giornata, 9 il giorno dopo']] },
-      { n: 'Videografia', p: 990, d: 'Un film del matrimonio e un teaser, fino a sette angolazioni.', f: [['1 film del matrimonio', 1], ['Sceneggiato', 1], ['Sound design', 1], ['Color grading', 1], ['1 teaser', 1], ['Fino a 7 angolazioni', 1]] },
-      { n: 'Foto e video', p: 1490, pop: 1, d: '150 foto editate e un film del matrimonio.', f: [['150 foto editate'], ['Color grading'], ['Ritocco professionale'], ['1 film del matrimonio', 1], ['Sceneggiato', 1], ['Sound design', 1], ['Film con color grading', 1], ['Versione social', 1]] },
-      { n: 'Su misura', p: 2500, d: 'Il nostro pacchetto più alto più un progetto su misura: più operatori per foto, video e drone, più punti di vista, più profondità in ciò che ricevi. Più invitati richiedono più talenti.', f: [['150 foto editate'], ['Ritocco professionale'], ['1 film del matrimonio', 1], ['Versione social', 1], ['Più fotografi'], ['Più videomaker', 1], ['Drone', 1], ['Più punti di vista'], ['Più profondità', 1], ['Sound design', 1], ['Color grading'], ['Più invitati, più talenti']] }
+      { n: 'Fotografia', p: 790, on: [0, 1, 2, 3], d: '300 foto editate, color grading e ritocco, un album digitale, sneak peek: 3 foto in giornata o 9 il giorno dopo.' },
+      { n: 'Videografia', p: 990, on: [4, 5, 6, 7], d: 'Un film del matrimonio sceneggiato con sound design e color grading, un teaser per i social, fino a sette angolazioni.' },
+      { n: 'Foto e video', p: 1490, pop: 1, on: [0, 1, 4, 5, 8], d: '150 foto editate con color grading e ritocco, un film del matrimonio sceneggiato con sound design e versione social.' },
+      { n: 'Su misura', p: 2500, on: [0, 1, 4, 5, 8, 9, 10, 11], d: 'Il nostro pacchetto più alto più un progetto su misura: più operatori per foto, video e drone, più punti di vista, più profondità in ciò che ricevi. Più invitati richiedono più talenti.' }
     ]
   } : {
     k: 'Your photo and video budget', send: 'Get the proposal', more: 'See the packages', msg: 'Hello Cover Page, our photo and video budget is',
     below: 'Below our packages: the first one starts at 790 EUR.', pop: 'Most popular', link: 'https://www.coverpageagency.com/foto-video-matrimonio-milano',
+    items: [['Edited photos'], ['Colour graded and retouched'], ['Digital album'], ['Same day sneak peek'], ['Wedding film', 1], ['Scripted, sound design', 1], ['Wedding teaser', 1], ['Up to 7 camera angles', 1], ['Social cut', 1], ['More operators'], ['Drone', 1], ['More points of view']],
     pk: [
-      { n: 'Photography', p: 790, d: '300 edited photos, a digital album and a same day sneak peek.', f: [['300 edited photos'], ['Colour graded and retouched'], ['1 digital album'], ['Sneak peek: 3 photos same day, 9 the next']] },
-      { n: 'Videography', p: 990, d: 'A wedding film and a teaser, up to seven camera angles.', f: [['1 wedding film', 1], ['Scripted', 1], ['Sound design', 1], ['Colour graded', 1], ['1 wedding teaser', 1], ['Up to 7 camera angles', 1]] },
-      { n: 'Photo and video', p: 1490, pop: 1, d: '150 edited photos and a wedding film.', f: [['150 edited photos'], ['Colour graded'], ['Professional retouch'], ['1 wedding film', 1], ['Scripted', 1], ['Sound design', 1], ['Colour graded film', 1], ['Social cut', 1]] },
-      { n: 'Custom build', p: 2500, d: 'Our highest package plus a custom build: more operators for photo, video and drone, more points of view, more depth in what you receive. A larger guest list needs more talents.', f: [['150 edited photos'], ['Professional retouch'], ['1 wedding film', 1], ['Social cut', 1], ['More photographers'], ['More videographers', 1], ['Drone', 1], ['More points of view'], ['More depth', 1], ['Sound design', 1], ['Colour graded'], ['Larger guest list, more talents']] }
+      { n: 'Photography', p: 790, on: [0, 1, 2, 3], d: '300 edited photos, colour graded and retouched, one digital album, sneak peek: 3 photos the same day or 9 the next day.' },
+      { n: 'Videography', p: 990, on: [4, 5, 6, 7], d: 'A scripted wedding film with sound design and colour grading, a teaser for social, up to seven camera angles.' },
+      { n: 'Photo and video', p: 1490, pop: 1, on: [0, 1, 4, 5, 8], d: '150 edited photos, colour graded and retouched, plus a scripted wedding film with sound design and a social cut.' },
+      { n: 'Custom build', p: 2500, on: [0, 1, 4, 5, 8, 9, 10, 11], d: 'Our highest package plus a custom build: more operators for photo, video and drone, more points of view, more depth in what you receive. A larger guest list needs more talents.' }
     ]
   };
-  var ORDER = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]; // frames reveal in reading order: more budget, more of the sheet lit
   function film(app, quote) {
     var MIN = 500, MAX = 4000, PK = FILM.pk;
     var top = el('div', 'cpx-f-top'), kb = el('div'); kb.appendChild(el('p', 'cpx-k', FILM.k)); var bud = el('div', 'cpx-bud'); kb.appendChild(bud); top.appendChild(kb); app.appendChild(top);
@@ -251,11 +254,10 @@
     app.appendChild(el('div', 'cpx-ticks', '<span>500</span><span>790</span><span>990</span><span>1,490</span><span>2,500+</span><span>4,000</span>'));
     var pk = el('div', 'cpx-pk'), pn = el('p', 'cpx-pkn'), pp = el('span', 'cpx-pkp'), pd = el('p', 'cpx-pkd'); pk.append(pn, pp, pd); app.appendChild(pk);
     var sheet = el('div', 'cpx-sheet'); app.appendChild(sheet);
-    var frames = [];
-    for (var i = 0; i < 12; i++) {
-      var f = el('div', 'cpx-fr'), im = el('img'); im.alt = ''; im.loading = 'lazy'; im.decoding = 'async'; im.src = BASE + 'wed/' + (i + 1) + '.webp';
-      var cap = el('b', 'cpx-cap'); f.append(im, cap); sheet.appendChild(f); frames.push({ f: f, cap: cap });
-    }
+    var frames = FILM.items.map(function (it, i) {
+      var f = el('div', 'cpx-fr' + (it[1] ? ' mv' : '')), im = el('img'); im.alt = ''; im.loading = 'lazy'; im.decoding = 'async'; im.src = BASE + 'wed/' + (i + 1) + '.webp';
+      f.append(im, el('b', 'cpx-cap', esc(it[0]))); sheet.appendChild(f); return f;
+    });
     var send = el('div', 'cpx-send'), go = el('a', 'cpx-btn', esc(FILM.send)), more = el('a', 'cpx-more', esc(FILM.more));
     go.target = '_blank'; go.rel = 'noopener'; more.href = FILM.link;
     send.append(go); if (quote) send.appendChild(quote); send.appendChild(more); app.appendChild(send);
@@ -266,24 +268,33 @@
       r.style.setProperty('--p', ((b - MIN) / (MAX - MIN) * 100) + '%');
       bud.textContent = (b >= MAX ? eur(MAX) + '+' : eur(b));
       if (t !== last) {
-        var set = function () {
-          pn.innerHTML = t < 0 ? '' : esc(P.n) + (P.pop ? ' <em>' + FILM.pop + '</em>' : ''); pp.textContent = t < 0 ? '' : (t === 3 ? eur(PK[2].p) + ' +' : eur(P.p));
-          pd.textContent = t < 0 ? FILM.below : P.d;
-          var items = t < 0 ? [] : P.f;
-          frames.forEach(function (o) { o.f.classList.remove('on', 'mv'); o.cap.textContent = ''; });
-          items.forEach(function (it, k) {
-            var o = frames[ORDER[k]]; o.cap.textContent = it[0]; o.f.classList.toggle('mv', !!it[1]);
-            o.f.style.transitionDelay = (RM ? 0 : k * 60) + 'ms'; o.f.classList.add('on');
-          });
-          pn.classList.remove('cpx-swap');
-        };
-        if (last === -2 || RM) set(); else { pn.classList.add('cpx-swap'); setTimeout(set, 180); }
+        pn.innerHTML = t < 0 ? '' : esc(P.n) + (P.pop ? ' <em>' + FILM.pop + '</em>' : ''); pp.textContent = t < 0 ? '' : (t === 3 ? eur(PK[2].p) + ' +' : eur(P.p));
+        pd.textContent = t < 0 ? FILM.below : P.d;
+        var k = 0;
+        frames.forEach(function (f, i) { var on = t >= 0 && P.on.indexOf(i) >= 0; if (on !== f.classList.contains('on')) { f.style.transitionDelay = (RM ? 0 : (k++) * 50) + 'ms'; f.classList.toggle('on', on); } });
         last = t;
       }
       go.href = wa(FILM.msg + ' ' + bud.textContent + (t >= 0 ? ' (' + P.n + ')' : ''));
     }
     r.addEventListener('input', draw); draw();
   }
+
+  /* map credit in the villa finder: shown, then folded after five seconds into an (i) that opens it again
+     (OSM attribution guidelines allow a collapse after five seconds as long as the licence stays findable) */
+  (function () {
+    var card = document.querySelector('.cpb-cardloc'); if (!card || !window.MutationObserver) return;
+    function fold(p) {
+      if (p.dataset.cpx) return; p.dataset.cpx = '1';
+      setTimeout(function () {
+        p.classList.add('cpx-crx');
+        var b = el('button', 'cpx-cri', 'i'); b.type = 'button'; b.setAttribute('aria-label', p.textContent); b.title = p.textContent;
+        b.onclick = function () { p.classList.toggle('cpx-crx'); };
+        p.parentNode.insertBefore(b, p);
+      }, 5000);
+    }
+    var scan = function () { [].forEach.call(card.querySelectorAll('.cpw-mapw p.cr'), fold); };
+    new MutationObserver(scan).observe(card, { childList: true, subtree: true }); scan();
+  })();
 
   /* ---------------- entertainment: the night, hour by hour ---------------- */
   var NIGHT = IT ? {
