@@ -140,11 +140,30 @@ ready(async () => {
   base.position.y = -top - 0.03; base.receiveShadow = true; cake.add(base);
   pearls(R + 0.075, -top + 0.004, 0.013, 170, cake);
   // bigger tier under the card tier
-  const R0 = R * 1.34, H0 = CH * 0.62;
+  const R0 = R * 1.34, H0 = CH * 0.74;
   const tier0 = new THREE.Mesh(new THREE.CylinderGeometry(R0, R0, H0, 160), icing);
   tier0.position.y = -top - 0.06 - H0 / 2; tier0.receiveShadow = true; cake.add(tier0);
   pearls(R0 + 0.004, -top - 0.06 - 0.012, 0.015, 220, cake);
-  pearls(R0 + 0.004, -top - 0.06 - H0 * 0.55, 0.011, 220, cake);
+  pearls(R0 + 0.004, -top - 0.06 - H0 + 0.01, 0.013, 220, cake);
+  // the couple's own wedding photos printed around the bottom tier, framed like sugar plaques
+  const wedBand = new THREE.Group(); scene.add(wedBand);
+  (() => {
+    const PH = H0 * 0.86, PW = PH * 0.75, n = 18, yC = -top - 0.06 - H0 * 0.5, rr = R0 + 0.004;
+    const frameMat = new THREE.MeshPhysicalMaterial({ color: 0xfffdf9, roughness: 0.4, sheen: 1, sheenColor: new THREE.Color(0xffffff) });
+    for (let i = 0; i < n; i++) {
+      const a = i / n * Math.PI * 2, dt = PW / rr;
+      const fr = new THREE.Mesh(new THREE.CylinderGeometry(rr, rr, PH + 0.02, 12, 1, true, a - dt / 2 - 0.008, dt + 0.016), frameMat); fr.position.y = yC; wedBand.add(fr);
+      const mat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.7, polygonOffset: true, polygonOffsetFactor: -2 });
+      const ph = new THREE.Mesh(new THREE.CylinderGeometry(rr + 0.002, rr + 0.002, PH, 12, 1, true, a - dt / 2, dt), mat); ph.position.y = yC; wedBand.add(ph);
+      loader.load(BASE + 'wed/' + (i % 12 + 1) + '.webp', bmp => {
+        const c = document.createElement('canvas'); c.width = 360; c.height = 480; const g = c.getContext('2d');
+        g.drawImage(bmp, 0, 0, 360, 480); g.strokeStyle = 'rgba(255,255,255,.9)'; g.lineWidth = 6; g.strokeRect(10, 10, 340, 460);
+        const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; mat.map = t; mat.needsUpdate = true;
+      }, undefined, () => {});
+      // a small sugar rosette between photos
+      const ro = new THREE.Mesh(new THREE.SphereGeometry(0.014, 12, 8), pearlMat); const b = a + Math.PI / n; ro.position.set(Math.sin(b) * (rr + 0.01), yC, Math.cos(b) * (rr + 0.01)); wedBand.add(ro);
+    }
+  })();
   const R2 = R * 0.6, H2 = CH * 0.42;
   const tier2 = new THREE.Mesh(new THREE.CylinderGeometry(R2, R2, H2, 128), icing);
   tier2.position.y = top + 0.05 + H2 / 2; tier2.castShadow = true; tier2.receiveShadow = true; cake.add(tier2);
@@ -334,7 +353,7 @@ ready(async () => {
   const fill = new THREE.DirectionalLight(0xffffff, 0.35); fill.position.set(-2, 0.6, 2.5); scene.add(fill);
 
   // framing: the first tier with its cards, the top tier and the couple
-  const yMin = -top - 0.06 - CH * 0.34, yMax = topY + S * 1.0;
+  const yMin = -top - 0.06 - H0 - 0.16, yMax = topY + S * 1.0;
   const target = new THREE.Vector3(0, (yMin + yMax) / 2, 0);
   const dir = new THREE.Vector3(0, 0.15, 1).normalize();
   function frame() {
@@ -364,6 +383,7 @@ ready(async () => {
     raf = 0; if (!visible || document.hidden) return;
     const t = now();
     ring.rotation.y = -angleAt(t);
+    wedBand.rotation.y = -ms / 1000 * 0.06;
 
     // cards flip up at the start, fold down at the very end so the loop closes
     hinges.forEach((h, i) => {
