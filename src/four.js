@@ -21,6 +21,9 @@
   var css = `
 /* these three cards now run on this script: anything else injected into them is hidden, the title stays */
 .cpb-body-1:has(>.cpx)>:not(.cpb-t):not(.cpx){display:none!important}
+/* location card: the native intro (Webflow) replaces the text the villa finder script writes */
+.cpb-cardloc .cpb-body-1:has(>.cpx-lead)>.cpb-p{display:none!important}
+.cpb-cardloc .cpx-lead{margin:clamp(12px,1.2vw,20px) 0 0}
 .cpx{--ink:#141311;--mut:rgba(20,19,17,.58);--line:rgba(20,19,17,.12);--acc:#e25b1e;font-family:Inter,system-ui,sans-serif;color:var(--ink);margin-top:clamp(16px,1.6vw,28px)}
 .cpx-lead{font-size:clamp(16px,1.05vw,19px);line-height:1.55;margin:0;max-width:62ch}
 .cpx-quote{display:inline-flex;align-items:center;gap:12px;margin:16px 0 0;padding:12px 18px;border:1px solid var(--ink);border-radius:999px;font:600 clamp(13px,.95vw,17px)/1 Inter,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--ink)}
