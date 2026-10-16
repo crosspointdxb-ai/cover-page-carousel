@@ -456,10 +456,11 @@ ready(async () => {
   const shade = stage.querySelector('.cpw-shade');
   if (shade) shade.style.top = (1 - EXT) * 100 + '%';
   // soft top and bottom edges on everything that extends past the stage, so no hard band shows on any screen
-  const FADE = 'linear-gradient(to bottom, transparent 0%, #000 30%, #000 90%, transparent 100%)';
+  const FADE = 'linear-gradient(to bottom, transparent 0%, #000 14%)';
   for (const el of [cv, stage.lastElementChild]) if (el) { el.style.webkitMaskImage = FADE; el.style.maskImage = FADE; }
   // the quote overlay darkens the whole hero, not only the stage: it runs from the canvas top to past the hero's bottom edge
-  if (shade) { shade.style.bottom = '-240px'; shade.style.webkitMaskImage = shade.style.maskImage = 'linear-gradient(to bottom, transparent 0%, #000 22%)'; }
+  // no dark veil during the quotes: the cake stays fully visible (the overlay keeps only its timing role)
+  if (shade) shade.style.background = 'none';
   const anim = shade && shade.getAnimations ? shade.getAnimations()[0] : null;
   const t0 = performance.now();
   const now = () => { const ms = anim && anim.currentTime != null ? Number(anim.currentTime) : performance.now() - t0; return ((ms / 1000) % LOOP + LOOP) % LOOP; };
