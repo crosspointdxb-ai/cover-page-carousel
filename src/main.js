@@ -216,8 +216,7 @@ ready(async () => {
   border(R0 - 0.01, -top - 0.06 + 0.008, 0.14, cake, 0.55);
   pearls(R0 + 0.004, -top - 0.06 - 0.012, 0.012, 220, cake);
   border(R0 + 0.03, -top - 0.06 - H0 + 0.012, 0.15, cake, 0.7);
-  // three small croquembouche towers on the bottom tier ledge, the piece montee in the piece montee
-  for (const a of [Math.PI * 0.62, Math.PI, Math.PI * 1.38]) croquembouche(Math.sin(a) * 1.19, -top - 0.06, Math.cos(a) * 1.19, 0.085, 0.3, cake);
+  // (croquembouche towers removed on request)
   // the couple's own wedding photos printed around the bottom tier, framed like sugar plaques
   const wedBand = new THREE.Group(); scene.add(wedBand);
   (() => {
@@ -472,7 +471,9 @@ ready(async () => {
   if (shade) shade.style.top = (1 - EXT) * 100 + '%';
   // soft top and bottom edges on everything that extends past the stage, so no hard band shows on any screen
   const FADE = 'linear-gradient(to bottom, transparent 0%, #000 30%, #000 90%, transparent 100%)';
-  for (const el of [cv, stage.lastElementChild, shade]) if (el) { el.style.webkitMaskImage = FADE; el.style.maskImage = FADE; }
+  for (const el of [cv, stage.lastElementChild]) if (el) { el.style.webkitMaskImage = FADE; el.style.maskImage = FADE; }
+  // the quote overlay darkens the whole hero, not only the stage: it runs from the canvas top to past the hero's bottom edge
+  if (shade) { shade.style.bottom = '-240px'; shade.style.webkitMaskImage = shade.style.maskImage = 'linear-gradient(to bottom, transparent 0%, #000 22%)'; }
   const anim = shade && shade.getAnimations ? shade.getAnimations()[0] : null;
   const t0 = performance.now();
   const now = () => { const ms = anim && anim.currentTime != null ? Number(anim.currentTime) : performance.now() - t0; return ((ms / 1000) % LOOP + LOOP) % LOOP; };

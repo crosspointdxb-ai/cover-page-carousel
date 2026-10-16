@@ -110,124 +110,177 @@
 .cpx-mo .cpx-chip{font-size:13px;padding:8px 12px;text-align:left}
 .cpx-pick{font-family:Hurricane,cursive;color:var(--acc);font-size:24px;line-height:1;min-height:24px;margin:10px 0 0}
 .cpx-pick span{display:inline-block;animation:cpxInk 420ms cubic-bezier(.23,1,.32,1) both}
+.cpx-row3{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.6fr);gap:18px 28px;align-items:end}.cpx-row3>:first-child{grid-column:1/-1}
+.cpx-f{display:block}.cpx-f .cpx-k{display:block}
+.cpx-hw{font-family:"Homemade Apple",cursive;font-weight:400;letter-spacing:0;text-transform:none;color:#1d2a44}
+.cpx-write{display:inline-block;animation:cpxWrite 900ms cubic-bezier(.45,.05,.35,1) both}
+@keyframes cpxWrite{from{clip-path:inset(-20% 100% -20% 0)}to{clip-path:inset(-20% -2% -20% 0)}}
+.cpx-pg .cpx-hw{font-size:clamp(13px,.9vw,15px);color:#1d2a44}.cpx-pg i{font-style:normal;color:var(--mut)}
+.cpx-pg{letter-spacing:0!important;text-transform:none!important;line-height:2!important}
+.cpx-dish .cpx-hw{font-size:clamp(16px,1.1vw,19px);line-height:1.9}
+.cpx-live{font-family:"Homemade Apple",cursive;font-size:clamp(16px,1.1vw,19px);line-height:1.9;color:rgba(29,42,68,.4);display:block}
+.cpx-live::after{content:"";display:inline-block;width:1px;height:1em;background:#1d2a44;margin-left:3px;vertical-align:-2px;animation:cpxCaret 1s steps(2) infinite}
+@keyframes cpxCaret{50%{opacity:0}}
+.cpx-note{margin:18px 0 0;font-size:12px;color:var(--mut)}.cpx-note b{font:500 10.5px Inter,sans-serif;letter-spacing:.24em;text-transform:uppercase;margin-right:6px}.cpx-note .cpx-hw{font-size:15px}
+.cpx-empty{display:block;font-family:"Homemade Apple",cursive;font-size:15px;color:rgba(29,42,68,.35);margin-top:28px}
+.cpx-pkn em{font:500 10.5px/1 Inter,sans-serif;letter-spacing:.2em;text-transform:uppercase;font-style:normal;vertical-align:middle;margin-left:10px;padding:6px 10px;border-radius:999px;background:var(--acc);color:#fff}
+.cpx-cap{position:absolute;left:0;right:0;bottom:0;padding:28px 8px 8px;background:linear-gradient(transparent,rgba(0,0,0,.78));color:#fff;font:500 clamp(10px,.75vw,13px)/1.25 Inter,sans-serif;opacity:0;transform:translateY(6px);transition:opacity 400ms ease-out,transform 400ms cubic-bezier(.23,1,.32,1);transition-delay:inherit}
+.cpx-fr.on .cpx-cap{opacity:1;transform:none}
+.cpx-fr img{transition-delay:inherit}
+.cpx-agent{margin-top:34px;padding-top:26px;border-top:1px solid var(--line)}
+.cpx-agent.cpx-idle .w-dyn-list{display:none}
+.cpx-agent .w-dyn-list{max-height:560px;overflow:auto}
+.cpx-ld{font-size:14px;color:var(--mut);margin:0}
+@media (max-width:900px){.cpx-row3{grid-template-columns:1fr}}
 @media (max-width:1100px){.cpx-m{grid-template-columns:1fr}}
 @media (max-width:900px){.cpx-n{grid-template-columns:1fr;gap:26px;padding-left:46px}.cpx-n::before{left:15px;right:auto;top:0;bottom:0;width:1px;height:auto}.cpx-nl{left:15px;top:0;width:1px!important;height:var(--w,0%);transition:height 500ms cubic-bezier(.23,1,.32,1)}.cpx-dot{position:absolute;left:-46px;top:-4px}.cpx-t{margin-top:0}.cpx-mo .cpx-chips{flex-direction:row;flex-wrap:wrap}.cpx-sheet{grid-template-columns:repeat(4,minmax(0,1fr))}}
 @media (prefers-reduced-motion:reduce){.cpx *,.cpx *::before,.cpx *::after{animation:none!important;transition:none!important}}
 `;
   var st = el('style'); st.id = 'cpx-css'; st.textContent = css; document.head.appendChild(st);
 
-  /* ---------------- catering: the menu card ---------------- */
+  /* ---------------- catering: the menu card, written by hand as the couple answers ---------------- */
+  // the questions are the ones from the Cover Page catering brief
   var MENU = IT ? {
-    g: 'Ospiti', s: 'Servizio', svc: ['Cena servita', 'Family style', 'Isole a buffet'],
-    courses: [['Aperitivo', ['Crudo e burrata', 'Fritto misto', 'Ostriche', 'Franciacorta']], ['Antipasto', ['Vitello tonnato', 'Carpaccio di manzo', 'Insalata di mare', 'Fiori di zucca']], ['Primo', ['Risotto alla milanese', 'Tortelli di zucca', 'Tagliolini al tartufo', 'Risotto al pesce persico']], ['Secondo', ['Cotoletta alla milanese', 'Filetto di manzo', 'Branzino al sale', 'Ossobuco']], ['Dolce', ['Torta nuziale', 'Tiramisù', 'Panna cotta', 'Croquembouche']], ['Open bar', ['Negroni', 'Spritz', 'Gin tonic', 'Vini lombardi']]],
-    own: 'Scrivi il tuo piatto', add: 'Aggiungi', title: 'Menu', sub: 'il vostro menu da sogno', for: 'per', guests: 'ospiti', empty: 'tocca un piatto o scrivi il tuo',
+    g: 'Quanti ospiti?', w: 'Dove si sposa? Location o villa', wph: 'Villa sul Lago di Como', dt: 'Quando? Anche indicativo', dph: 'Giugno 2027',
+    s: 'Come volete il servizio?', svc: ['Servito', 'Buffet', 'Family style', 'Isole'],
+    courses: [['Aperitivo', 'Bollicine, finger food, crudo', ['Crudo e burrata', 'Fritto misto', 'Ostriche', 'Franciacorta']], ['Antipasto', 'Vitello tonnato, burrata, tartare', ['Vitello tonnato', 'Carpaccio di manzo', 'Insalata di mare', 'Fiori di zucca']], ['Primo', 'Risotto alla milanese, ravioli', ['Risotto alla milanese', 'Tortelli di zucca', 'Tagliolini al tartufo', 'Risotto al pesce persico']], ['Secondo', 'Pesce di lago, filetto, cotoletta', ['Cotoletta alla milanese', 'Filetto di manzo', 'Branzino al sale', 'Ossobuco']], ['Dolce e torta', 'Torta nuziale, sorbetto, mignon', ['Torta nuziale', 'Tiramisù', 'Panna cotta', 'Sorbetto']], ['Bevande e open bar', 'Vini, cocktail, open bar dopo cena', ['Negroni', 'Spritz', 'Gin tonic', 'Vini lombardi']]],
+    n: 'Esigenze particolari', nph: 'Vegetariani, allergie, bambini',
+    add: 'Aggiungi', title: 'Menu', sub: 'il vostro menu da sogno', guests: 'ospiti', empty: 'rispondete, il menu si scrive da solo', note: 'Nota',
     send: 'Invia il mio menu', msg: 'Ciao Cover Page, ecco il menu dei nostri sogni'
   } : {
-    g: 'Guests', s: 'Service', svc: ['Seated dinner', 'Family style', 'Food stations'],
-    courses: [['Aperitivo', ['Crudo and burrata', 'Fritto misto', 'Oysters', 'Franciacorta']], ['Antipasto', ['Vitello tonnato', 'Beef carpaccio', 'Seafood salad', 'Courgette flowers']], ['Primo', ['Risotto alla milanese', 'Pumpkin tortelli', 'Truffle tagliolini', 'Lake perch risotto']], ['Secondo', ['Cotoletta alla milanese', 'Beef fillet', 'Salt crusted sea bass', 'Ossobuco']], ['Dolce', ['Wedding cake', 'Tiramisù', 'Panna cotta', 'Croquembouche']], ['Open bar', ['Negroni', 'Spritz', 'Gin tonic', 'Lombardy wines']]],
-    own: 'Write your own dish', add: 'Add', title: 'Menu', sub: 'your dream menu', for: 'for', guests: 'guests', empty: 'tap a dish or write your own',
+    g: 'How many guests?', w: 'Where is the wedding? Location or villa', wph: 'Villa on Lake Como', dt: 'When? Even approximate', dph: 'June 2027',
+    s: 'How do you want the service?', svc: ['Plated', 'Buffet', 'Family style', 'Food stations'],
+    courses: [['Aperitivo', 'Bubbles, finger food, crudo', ['Crudo and burrata', 'Fritto misto', 'Oysters', 'Franciacorta']], ['Starter', 'Vitello tonnato, burrata, tartare', ['Vitello tonnato', 'Beef carpaccio', 'Seafood salad', 'Courgette flowers']], ['First course', 'Risotto alla milanese, ravioli', ['Risotto alla milanese', 'Pumpkin tortelli', 'Truffle tagliolini', 'Lake perch risotto']], ['Main course', 'Lake fish, fillet, cotoletta', ['Cotoletta alla milanese', 'Beef fillet', 'Salt crusted sea bass', 'Ossobuco']], ['Dessert and cake', 'Wedding cake, sorbet, petit fours', ['Wedding cake', 'Tiramisù', 'Panna cotta', 'Sorbet']], ['Drinks and open bar', 'Wines, cocktails, open bar after dinner', ['Negroni', 'Spritz', 'Gin tonic', 'Lombardy wines']]],
+    n: 'Special requirements', nph: 'Vegetarians, allergies, children',
+    add: 'Add', title: 'Menu', sub: 'your dream menu', guests: 'guests', empty: 'answer, and the menu writes itself', note: 'Note',
     send: 'Send my menu', msg: 'Hello Cover Page, here is our dream menu'
   };
+  // a pen script for everything the couple writes
+  (function () { if (document.getElementById('cpx-hand')) return; var l = el('link'); l.id = 'cpx-hand'; l.rel = 'stylesheet'; l.href = 'https://fonts.googleapis.com/css2?family=Homemade+Apple&display=swap'; document.head.appendChild(l); })();
+  function field(label, ph, val, on) {
+    var w = el('label', 'cpx-f'); w.appendChild(el('span', 'cpx-k', esc(label)));
+    var i = el('input', 'cpx-in'); i.placeholder = ph; i.value = val; i.maxLength = 60; i.addEventListener('input', function () { on(i.value); }); w.appendChild(i); return w;
+  }
   function menu(app, quote) {
-    var state = { g: 120, s: 0, c: 0, d: MENU.courses.map(function () { return []; }) };
+    var S = { g: 120, w: '', dt: '', s: -1, c: 0, d: MENU.courses.map(function () { return []; }), live: '', n: '' };
+    var seen = {}; // what is already written on the card, so only new words get the pen stroke
     var wrap = el('div', 'cpx-m'), ctl = el('div', 'cpx-ctl'), paper = el('div', 'cpx-paper');
     wrap.append(ctl, paper); app.appendChild(wrap);
-    // guests
-    var gb = el('div'); gb.appendChild(el('p', 'cpx-k', MENU.g));
+    // guests, where, when
+    var top3 = el('div', 'cpx-row3');
+    var gb = el('div'); gb.appendChild(el('p', 'cpx-k', esc(MENU.g)));
     var gr = el('div', 'cpx-guests'), minus = el('button', 'cpx-step', '&minus;'), plus = el('button', 'cpx-step', '+'), gn = el('span', 'cpx-gn');
     minus.type = plus.type = 'button'; minus.setAttribute('aria-label', '-10'); plus.setAttribute('aria-label', '+10');
-    gr.append(minus, gn, plus); gb.appendChild(gr); ctl.appendChild(gb);
-    minus.onclick = function () { state.g = Math.max(10, state.g - 10); draw(); };
-    plus.onclick = function () { state.g = Math.min(600, state.g + 10); draw(); };
+    gr.append(minus, gn, plus); gb.appendChild(gr);
+    minus.onclick = function () { S.g = Math.max(10, S.g - 10); draw(); };
+    plus.onclick = function () { S.g = Math.min(600, S.g + 10); draw(); };
+    top3.append(gb, field(MENU.w, MENU.wph, '', function (v) { S.w = v.trim(); draw(); }), field(MENU.dt, MENU.dph, '', function (v) { S.dt = v.trim(); draw(); }));
+    ctl.appendChild(top3);
     // service
-    var sb = el('div'); sb.appendChild(el('p', 'cpx-k', MENU.s)); var sc = el('div', 'cpx-chips'); sb.appendChild(sc); ctl.appendChild(sb);
-    MENU.svc.forEach(function (n, i) { var b = el('button', 'cpx-chip', esc(n)); b.type = 'button'; b.onclick = function () { state.s = i; draw(); }; sc.appendChild(b); });
+    var sb = el('div'); sb.appendChild(el('p', 'cpx-k', esc(MENU.s))); var sc = el('div', 'cpx-chips'); sb.appendChild(sc); ctl.appendChild(sb);
+    MENU.svc.forEach(function (n, i) { var b = el('button', 'cpx-chip', esc(n)); b.type = 'button'; b.onclick = function () { S.s = S.s === i ? -1 : i; draw(); }; sc.appendChild(b); });
     // courses
     var cb = el('div'), tabs = el('div', 'cpx-tabs'), dishes = el('div', 'cpx-chips'); tabs.setAttribute('role', 'tablist'); dishes.style.marginTop = '16px';
     cb.append(tabs, dishes); ctl.appendChild(cb);
-    MENU.courses.forEach(function (c, i) { var t = el('button', 'cpx-tab', esc(c[0])); t.type = 'button'; t.setAttribute('role', 'tab'); t.onclick = function () { state.c = i; draw(); }; tabs.appendChild(t); });
-    var own = el('form', 'cpx-own'), inp = el('input', 'cpx-in'), add = el('button', 'cpx-add', MENU.add);
-    inp.placeholder = MENU.own; inp.maxLength = 60; inp.setAttribute('aria-label', MENU.own); add.type = 'submit'; own.append(inp, add); cb.appendChild(own);
-    own.onsubmit = function (e) { e.preventDefault(); var v = inp.value.trim(); if (!v) return; var l = state.d[state.c]; if (l.indexOf(v) < 0 && l.length < 6) l.push(v); inp.value = ''; draw(v); };
+    MENU.courses.forEach(function (c, i) { var t = el('button', 'cpx-tab', esc(c[0])); t.type = 'button'; t.setAttribute('role', 'tab'); t.onclick = function () { S.c = i; S.live = ''; inp.value = ''; inp.placeholder = c[1]; draw(); }; tabs.appendChild(t); });
+    var own = el('form', 'cpx-own'), inp = el('input', 'cpx-in'), add = el('button', 'cpx-add', esc(MENU.add));
+    inp.placeholder = MENU.courses[0][1]; inp.maxLength = 60; inp.setAttribute('aria-label', MENU.courses[0][0]); add.type = 'submit'; own.append(inp, add); cb.appendChild(own);
+    inp.addEventListener('input', function () { S.live = inp.value.trim(); draw(); });
+    own.onsubmit = function (e) { e.preventDefault(); var v = inp.value.trim(); if (!v) return; var l = S.d[S.c]; if (l.indexOf(v) < 0 && l.length < 6) l.push(v); inp.value = ''; S.live = ''; draw(); };
+    ctl.appendChild(field(MENU.n, MENU.nph, '', function (v) { S.n = v.trim(); draw(); }));
     // send
     var send = el('div', 'cpx-send'), go = el('a', 'cpx-btn', esc(MENU.send)); go.target = '_blank'; go.rel = 'noopener';
     send.appendChild(go); if (quote) send.appendChild(quote); ctl.appendChild(send);
 
-    function toggle(d) { var l = state.d[state.c], k = l.indexOf(d); if (k >= 0) l.splice(k, 1); else if (l.length < 6) l.push(d); draw(k >= 0 ? null : d); }
-    function draw(fresh) {
-      gn.textContent = state.g;
-      [].forEach.call(sc.children, function (b, i) { b.setAttribute('aria-pressed', i === state.s); });
-      [].forEach.call(tabs.children, function (t, i) { t.setAttribute('aria-selected', i === state.c); t.textContent = MENU.courses[i][0] + (state.d[i].length ? ' · ' + state.d[i].length : ''); });
+    function hw(text, key, cls) { var fresh = !seen[key]; seen[key] = 1; return '<span class="cpx-hw' + (cls ? ' ' + cls : '') + (fresh ? ' cpx-write' : '') + '">' + esc(text) + '</span>'; }
+    function draw() {
+      gn.textContent = S.g;
+      [].forEach.call(sc.children, function (b, i) { b.setAttribute('aria-pressed', i === S.s); });
+      [].forEach.call(tabs.children, function (t, i) { t.setAttribute('aria-selected', i === S.c); t.textContent = MENU.courses[i][0] + (S.d[i].length ? ' · ' + S.d[i].length : ''); });
       dishes.innerHTML = '';
-      MENU.courses[state.c][1].concat(state.d[state.c].filter(function (x) { return MENU.courses[state.c][1].indexOf(x) < 0; })).forEach(function (d) {
-        var b = el('button', 'cpx-chip', esc(d)); b.type = 'button'; b.setAttribute('aria-pressed', state.d[state.c].indexOf(d) >= 0); b.onclick = function () { toggle(d); }; dishes.appendChild(b);
+      MENU.courses[S.c][2].concat(S.d[S.c].filter(function (x) { return MENU.courses[S.c][2].indexOf(x) < 0; })).forEach(function (d) {
+        var b = el('button', 'cpx-chip', esc(d)); b.type = 'button'; b.setAttribute('aria-pressed', S.d[S.c].indexOf(d) >= 0);
+        b.onclick = function () { var l = S.d[S.c], k = l.indexOf(d); if (k >= 0) l.splice(k, 1); else if (l.length < 6) l.push(d); draw(); };
+        dishes.appendChild(b);
       });
-      // the printed card
-      var h = '<p class="cpx-pt">' + MENU.title + '</p><p class="cpx-ps">' + MENU.sub + '</p><p class="cpx-pg">' + MENU.svc[state.s] + ' · ' + MENU.for + ' ' + state.g + ' ' + MENU.guests + '</p>';
+      var meta = [S.g + ' ' + MENU.guests].concat(S.w ? [S.w] : [], S.dt ? [S.dt] : [], S.s >= 0 ? [MENU.svc[S.s]] : []);
+      var h = '<p class="cpx-pt">' + MENU.title + '</p><p class="cpx-ps">' + MENU.sub + '</p><p class="cpx-pg">' + meta.map(function (m, i) { return hw(m, 'm' + i + m); }).join('<i> · </i>') + '</p>';
       var any = false;
       MENU.courses.forEach(function (c, i) {
-        if (!state.d[i].length) return; any = true;
-        h += '<div class="cpx-co"><h5>' + esc(c[0]) + '</h5>' + state.d[i].map(function (d) { return '<button type="button" class="cpx-dish" data-c="' + i + '" data-d="' + esc(d) + '"' + (d === fresh ? '' : ' style="animation:none"') + '>' + esc(d) + '</button>'; }).join('') + '</div>';
+        var live = i === S.c && S.live && S.d[i].indexOf(S.live) < 0;
+        if (!S.d[i].length && !live) return; any = any || S.d[i].length > 0;
+        h += '<div class="cpx-co"><h5>' + esc(c[0]) + '</h5>' + S.d[i].map(function (d) { return '<button type="button" class="cpx-dish" data-c="' + i + '" data-d="' + esc(d) + '">' + hw(d, 'd' + i + d) + '</button>'; }).join('') +
+          (live ? '<span class="cpx-dish cpx-live">' + esc(S.live) + '</span>' : '') + '</div>';
       });
-      if (!any) h += '<span class="cpx-dish cpx-empty">' + MENU.empty + '</span>';
+      if (S.n) h += '<p class="cpx-note"><b>' + MENU.note + '</b> ' + hw(S.n, 'n' + S.n) + '</p>';
+      if (!any && !S.live) h += '<span class="cpx-empty">' + MENU.empty + '</span>';
       paper.innerHTML = h;
-      [].forEach.call(paper.querySelectorAll('button.cpx-dish'), function (b) { b.onclick = function () { var l = state.d[+b.dataset.c], k = l.indexOf(b.dataset.d); if (k >= 0) l.splice(k, 1); draw(); }; });
-      var txt = MENU.msg + '\n' + MENU.svc[state.s] + ', ' + state.g + ' ' + MENU.guests + '\n' + MENU.courses.map(function (c, i) { return state.d[i].length ? c[0] + ': ' + state.d[i].join(', ') : ''; }).filter(Boolean).join('\n');
+      [].forEach.call(paper.querySelectorAll('button.cpx-dish'), function (b) { b.onclick = function () { var l = S.d[+b.dataset.c], k = l.indexOf(b.dataset.d); if (k >= 0) l.splice(k, 1); delete seen['d' + b.dataset.c + b.dataset.d]; draw(); }; });
+      var txt = MENU.msg + '\n' + meta.join(', ') + '\n' + MENU.courses.map(function (c, i) { return S.d[i].length ? c[0] + ': ' + S.d[i].join(', ') : ''; }).filter(Boolean).join('\n') + (S.n ? '\n' + MENU.n + ': ' + S.n : '');
       go.href = wa(txt); go.setAttribute('aria-disabled', !any);
     }
     draw();
   }
 
-  /* ---------------- photo and video: the contact sheet ---------------- */
+  /* ---------------- photo and video: more budget, more frames revealed ---------------- */
+  // packages from coverpageagency.com/foto-video-matrimonio-milano; each caption is written on its frame. v = a film item
   var FILM = IT ? {
-    k: 'Il tuo budget foto e video', lab: ['Fotografia', 'Videografia', 'Foto e video', 'Su misura'],
-    d: ['300 foto editate, un album digitale e uno sneak peek in giornata.', 'Un film del matrimonio e un teaser, fino a sette angolazioni.', '150 foto editate e un film del matrimonio.', 'Il nostro pacchetto più alto più un progetto su misura: più operatori per foto, video e drone, più punti di vista, più profondità in ciò che ricevi. Più invitati richiedono più talenti.'],
-    below: 'Sotto i nostri pacchetti: il primo parte da 790 EUR.', feat: ['Foto editate', 'Sneak peek', 'Film', 'Teaser', 'Più angolazioni', 'Drone', 'Secondo operatore'],
-    send: 'Ricevi la proposta', more: 'Vedi i pacchetti', msg: 'Ciao Cover Page, il nostro budget foto e video è', link: '/it/foto-video-matrimonio-milano'
+    k: 'Il tuo budget foto e video', send: 'Ricevi la proposta', more: 'Vedi i pacchetti', msg: 'Ciao Cover Page, il nostro budget foto e video è',
+    below: 'Sotto i nostri pacchetti: il primo parte da 790 EUR.', pop: 'Il più scelto', link: '/it/foto-video-matrimonio-milano',
+    pk: [
+      { n: 'Fotografia', p: 790, d: '300 foto editate, un album digitale e uno sneak peek in giornata.', f: [['300 foto editate'], ['Color grading e ritocco'], ['1 album digitale'], ['Sneak peek: 3 foto in giornata, 9 il giorno dopo']] },
+      { n: 'Videografia', p: 990, d: 'Un film del matrimonio e un teaser, fino a sette angolazioni.', f: [['1 film del matrimonio', 1], ['Sceneggiato', 1], ['Sound design', 1], ['Color grading', 1], ['1 teaser', 1], ['Fino a 7 angolazioni', 1]] },
+      { n: 'Foto e video', p: 1490, pop: 1, d: '150 foto editate e un film del matrimonio.', f: [['150 foto editate'], ['Color grading'], ['Ritocco professionale'], ['1 film del matrimonio', 1], ['Sceneggiato', 1], ['Sound design', 1], ['Film con color grading', 1], ['Versione social', 1]] },
+      { n: 'Su misura', p: 2500, d: 'Il nostro pacchetto più alto più un progetto su misura: più operatori per foto, video e drone, più punti di vista, più profondità in ciò che ricevi. Più invitati richiedono più talenti.', f: [['150 foto editate'], ['Ritocco professionale'], ['1 film del matrimonio', 1], ['Versione social', 1], ['Più fotografi'], ['Più videomaker', 1], ['Drone', 1], ['Più punti di vista'], ['Più profondità', 1], ['Sound design', 1], ['Color grading'], ['Più invitati, più talenti']] }
+    ]
   } : {
-    k: 'Your photo and video budget', lab: ['Photography', 'Videography', 'Photo and video', 'Custom build'],
-    d: ['300 edited photos, a digital album and a same day sneak peek.', 'A wedding film and a teaser, up to seven camera angles.', '150 edited photos and a wedding film.', 'Our highest package plus a custom build: more operators for photo, video and drone, more points of view, more depth in what you receive. A larger guest list needs more talents.'],
-    below: 'Below our packages: the first one starts at 790 EUR.', feat: ['Edited photos', 'Sneak peek', 'Wedding film', 'Teaser', 'More angles', 'Drone', 'Second operator'],
-    send: 'Get the proposal', more: 'See the packages', msg: 'Hello Cover Page, our photo and video budget is', link: 'https://www.coverpageagency.com/foto-video-matrimonio-milano'
+    k: 'Your photo and video budget', send: 'Get the proposal', more: 'See the packages', msg: 'Hello Cover Page, our photo and video budget is',
+    below: 'Below our packages: the first one starts at 790 EUR.', pop: 'Most popular', link: 'https://www.coverpageagency.com/foto-video-matrimonio-milano',
+    pk: [
+      { n: 'Photography', p: 790, d: '300 edited photos, a digital album and a same day sneak peek.', f: [['300 edited photos'], ['Colour graded and retouched'], ['1 digital album'], ['Sneak peek: 3 photos same day, 9 the next']] },
+      { n: 'Videography', p: 990, d: 'A wedding film and a teaser, up to seven camera angles.', f: [['1 wedding film', 1], ['Scripted', 1], ['Sound design', 1], ['Colour graded', 1], ['1 wedding teaser', 1], ['Up to 7 camera angles', 1]] },
+      { n: 'Photo and video', p: 1490, pop: 1, d: '150 edited photos and a wedding film.', f: [['150 edited photos'], ['Colour graded'], ['Professional retouch'], ['1 wedding film', 1], ['Scripted', 1], ['Sound design', 1], ['Colour graded film', 1], ['Social cut', 1]] },
+      { n: 'Custom build', p: 2500, d: 'Our highest package plus a custom build: more operators for photo, video and drone, more points of view, more depth in what you receive. A larger guest list needs more talents.', f: [['150 edited photos'], ['Professional retouch'], ['1 wedding film', 1], ['Social cut', 1], ['More photographers'], ['More videographers', 1], ['Drone', 1], ['More points of view'], ['More depth', 1], ['Sound design', 1], ['Colour graded'], ['Larger guest list, more talents']] }
+    ]
   };
-  var PRICE = [790, 990, 1490, 2500];
-  // which frames light up and which features switch on, per package
-  var LIT = [[0, 1, 2, 3, 6, 7, 8], [4, 5, 9, 10], [0, 1, 2, 4, 5, 6, 8, 9, 10], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]];
-  var FEAT = [[0, 1], [2, 3, 4], [0, 2], [0, 1, 2, 3, 4, 5, 6]];
+  var ORDER = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]; // frames reveal in reading order: more budget, more of the sheet lit
   function film(app, quote) {
-    var MIN = 500, MAX = 4000;
+    var MIN = 500, MAX = 4000, PK = FILM.pk;
     var top = el('div', 'cpx-f-top'), kb = el('div'); kb.appendChild(el('p', 'cpx-k', FILM.k)); var bud = el('div', 'cpx-bud'); kb.appendChild(bud); top.appendChild(kb); app.appendChild(top);
     var r = el('input', 'cpx-range'); r.type = 'range'; r.min = MIN; r.max = MAX; r.step = 50; r.value = 1000; r.setAttribute('aria-label', FILM.k); app.appendChild(r);
-    var tk = el('div', 'cpx-ticks', '<span>500</span><span>790</span><span>990</span><span>1,490</span><span>2,500+</span><span>4,000</span>'); app.appendChild(tk);
+    app.appendChild(el('div', 'cpx-ticks', '<span>500</span><span>790</span><span>990</span><span>1,490</span><span>2,500+</span><span>4,000</span>'));
     var pk = el('div', 'cpx-pk'), pn = el('p', 'cpx-pkn'), pp = el('span', 'cpx-pkp'), pd = el('p', 'cpx-pkd'); pk.append(pn, pp, pd); app.appendChild(pk);
-    var feat = el('div', 'cpx-feat'); FILM.feat.forEach(function (f) { feat.appendChild(el('span', '', esc(f))); }); app.appendChild(feat);
     var sheet = el('div', 'cpx-sheet'); app.appendChild(sheet);
     var frames = [];
     for (var i = 0; i < 12; i++) {
-      var f = el('div', 'cpx-fr' + ([4, 5, 9, 10].indexOf(i) >= 0 ? ' mv' : '')), im = el('img'); im.alt = ''; im.loading = 'lazy'; im.decoding = 'async'; im.src = BASE + 'wed/' + (i + 1) + '.webp';
-      f.append(im, el('i', '', ([4, 5, 9, 10].indexOf(i) >= 0 ? 'Film ' : 'Frame ') + String(i + 1).padStart(2, '0'))); sheet.appendChild(f); frames.push(f);
+      var f = el('div', 'cpx-fr'), im = el('img'); im.alt = ''; im.loading = 'lazy'; im.decoding = 'async'; im.src = BASE + 'wed/' + (i + 1) + '.webp';
+      var cap = el('b', 'cpx-cap'); f.append(im, cap); sheet.appendChild(f); frames.push({ f: f, cap: cap });
     }
     var send = el('div', 'cpx-send'), go = el('a', 'cpx-btn', esc(FILM.send)), more = el('a', 'cpx-more', esc(FILM.more));
     go.target = '_blank'; go.rel = 'noopener'; more.href = FILM.link;
     send.append(go); if (quote) send.appendChild(quote); send.appendChild(more); app.appendChild(send);
     var last = -2;
-    function tier(b) { var t = -1; for (var k = 0; k < PRICE.length; k++) if (b >= PRICE[k]) t = k; return t; }
+    function tier(b) { var t = -1; for (var k = 0; k < PK.length; k++) if (b >= PK[k].p) t = k; return t; }
     function draw() {
-      var b = +r.value, t = tier(b);
+      var b = +r.value, t = tier(b), P = PK[t];
       r.style.setProperty('--p', ((b - MIN) / (MAX - MIN) * 100) + '%');
       bud.textContent = (b >= MAX ? eur(MAX) + '+' : eur(b));
       if (t !== last) {
         var set = function () {
-          pn.textContent = t < 0 ? '' : FILM.lab[t]; pp.textContent = t < 0 ? '' : (t === 3 ? eur(PRICE[2]) + ' +' : eur(PRICE[t]));
-          pd.textContent = t < 0 ? FILM.below : FILM.d[t];
-          frames.forEach(function (f, i) { f.classList.toggle('on', t >= 0 && LIT[t].indexOf(i) >= 0); });
-          [].forEach.call(feat.children, function (s, i) { s.classList.toggle('on', t >= 0 && FEAT[t].indexOf(i) >= 0); });
+          pn.innerHTML = t < 0 ? '' : esc(P.n) + (P.pop ? ' <em>' + FILM.pop + '</em>' : ''); pp.textContent = t < 0 ? '' : (t === 3 ? eur(PK[2].p) + ' +' : eur(P.p));
+          pd.textContent = t < 0 ? FILM.below : P.d;
+          var items = t < 0 ? [] : P.f;
+          frames.forEach(function (o) { o.f.classList.remove('on', 'mv'); o.cap.textContent = ''; });
+          items.forEach(function (it, k) {
+            var o = frames[ORDER[k]]; o.cap.textContent = it[0]; o.f.classList.toggle('mv', !!it[1]);
+            o.f.style.transitionDelay = (RM ? 0 : k * 60) + 'ms'; o.f.classList.add('on');
+          });
           pn.classList.remove('cpx-swap');
         };
         if (last === -2 || RM) set(); else { pn.classList.add('cpx-swap'); setTimeout(set, 180); }
         last = t;
       }
-      go.href = wa(FILM.msg + ' ' + bud.textContent + (t >= 0 ? ' (' + FILM.lab[t] + ')' : ''));
+      go.href = wa(FILM.msg + ' ' + bud.textContent + (t >= 0 ? ' (' + P.n + ')' : ''));
     }
     r.addEventListener('input', draw); draw();
   }
@@ -251,6 +304,7 @@
     });
     var send = el('div', 'cpx-send'), go = el('a', 'cpx-btn', esc(NIGHT.send)); go.target = '_blank'; go.rel = 'noopener';
     send.appendChild(go); if (quote) send.appendChild(quote); app.appendChild(send);
+    agent(app);
     function draw(fresh) {
       var lastOn = -1;
       cols.forEach(function (o, i) {
@@ -264,6 +318,30 @@
       go.setAttribute('aria-disabled', !any);
     }
     draw();
+  }
+
+  // Cover Agent: his AI act search, reused as is (list from /entertainment + act-search.js from his worker)
+  function agent(app) {
+    var box = el('div', 'cpx-agent cpx-idle'); box.appendChild(el('p', 'cpx-k', IT ? 'Oppure chiedi a Cover Agent, la nostra AI' : 'Or ask Cover Agent, our AI'));
+    var host = el('div', 'cpx-ah', '<p class="cpx-ld">' + (IT ? 'Carico il nostro archivio' : 'Loading our archive') + '\u2026</p>'); box.appendChild(host); app.appendChild(box);
+    var done = false;
+    function load() {
+      if (done) return; done = true;
+      fetch((IT ? '/it' : '') + '/entertainment').then(function (r) { return r.text(); }).then(function (html) {
+        var L = new DOMParser().parseFromString(html, 'text/html').querySelector('.entertainment-list'); if (!L) throw 0;
+        host.innerHTML = ''; host.appendChild(document.importNode(L.closest('.w-dyn-list') || L, true));
+        if (window.__cpaActSearch) return;
+        var s = document.createElement('script'); s.defer = true;
+        s.src = 'https://cover-agent-ai.coverpageagency.workers.dev/' + (/\.webflow\.io$/.test(location.hostname) ? 'next/' : '') + 'act-search.js';
+        s.onload = function () {
+          var wake = function () { box.classList.remove('cpx-idle'); };
+          var i = host.querySelector('#cpa-as input'); if (i) i.addEventListener('keydown', function (e) { if (e.key === 'Enter' || i.value.length > 1) wake(); });
+          host.addEventListener('click', function (e) { if (e.target.closest('#cpa-as button, #cpa-as .op, #cpa-as .chips *')) wake(); });
+        };
+        document.body.appendChild(s);
+      }).catch(function () { host.innerHTML = '<a class="cpx-more" href="' + (IT ? '/it' : '') + '/entertainment">' + (IT ? 'Apri il nostro archivio' : 'Open our archive') + '</a>'; });
+    }
+    if ('IntersectionObserver' in window) { var io = new IntersectionObserver(function (e) { if (e[0].isIntersecting) { io.disconnect(); load(); } }, { rootMargin: '900px' }); io.observe(box); } else load();
   }
 
   var RUN = { menu: menu, film: film, night: night };
