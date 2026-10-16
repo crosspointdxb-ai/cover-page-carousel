@@ -1,0 +1,324 @@
+// Cover Page wedding carousel, WebGL version (piece montee).
+// Reads the chapters from the page (.cpw-card) and builds a tiered wedding cake:
+// the 20 cards flip up around the first tier, the couple rises on the top tier
+// and gets dressed for the wedding as the 33 s loop runs.
+// Time follows the page's CSS quote overlay, so quotes and motion stay paired.
+import * as THREE from 'three';
+import { RoomEnvironment } from '../../t/examples/jsm/environments/RoomEnvironment.js';
+
+const SCRIPT = document.currentScript;
+const BASE = (SCRIPT && SCRIPT.src ? SCRIPT.src.replace(/[^/]*$/, '') : './');
+const LOOP = 33;
+
+function speed(t) {
+  if (t < 11) return 60 + 260 * (t / 11) ** 2;
+  if (t < 14) return 110 - 90 * ((t - 11) / 3);
+  if (t < 22) return 20 + 320 * ((t - 14) / 8) ** 2;
+  const x = (t - 22) / 11; return 340 - 280 * (1 - (1 - x) ** 2);
+}
+const DT = 1 / 120, N = Math.round(LOOP / DT);
+const ANG = new Float32Array(N + 1);
+(() => {
+  const b = 0.7;
+  const vs = t => {
+    if (t > 11 - b && t < 11 + b) { const a = speed(11 - b), c = speed(11 + b), k = (t - (11 - b)) / (2 * b); return a + (c - a) * k * k * (3 - 2 * k); }
+    return speed(t);
+  };
+  for (let i = 1; i <= N; i++) ANG[i] = ANG[i - 1] + 0.42 * (vs((i - 1) * DT) + vs(i * DT)) / 2 * DT;
+  const k = (Math.round(ANG[N] / 360) * 360) / ANG[N];
+  for (let i = 0; i <= N; i++) ANG[i] *= k;
+})();
+const angleAt = t => { const f = t / DT, i = Math.floor(f), r = f - i; return (ANG[i] + (ANG[Math.min(i + 1, N)] - ANG[i]) * r) * Math.PI / 180; };
+const sstep = (a, b, x) => { const k = Math.min(1, Math.max(0, (x - a) / (b - a))); return k * k * (3 - 2 * k); };
+
+function ready(fn) { document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', fn) : fn(); }
+
+ready(async () => {
+  const stage = document.querySelector('.cpw-stage');
+  if (!stage) return;
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const test = document.createElement('canvas');
+  if (!(test.getContext('webgl2') || test.getContext('webgl'))) return;
+
+  const cards = [...stage.querySelectorAll('.cpw-card')].map((li, i) => ({
+    i,
+    n: (li.querySelector('.cpw-n') || {}).textContent || '',
+    t: (li.querySelector('.cpw-ct') || {}).textContent || '',
+    l: (li.querySelector('.cpw-cl') || {}).textContent || '',
+    tasks: [...li.querySelectorAll('.cpw-bub li')].map(x => x.textContent.trim()).filter(Boolean),
+  }));
+  if (!cards.length) return;
+
+  try { await Promise.race([Promise.all([document.fonts.load('60px "Classy Vogue"'), document.fonts.load('24px Inter')]), new Promise(r => setTimeout(r, 1500))]); } catch (e) {}
+  const SERIF = '"Classy Vogue", Georgia, serif', SANS = 'Inter, Helvetica, Arial, sans-serif';
+
+  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
+  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 1.75));
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.05;
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFShadowMap;
+  renderer.localClippingEnabled = true;
+  const cv = renderer.domElement;
+  cv.className = 'cpw-gl-canvas';
+  cv.setAttribute('aria-hidden', 'true');
+  const EXT = 1.18;
+  Object.assign(cv.style, { position: 'absolute', left: '0', right: '0', bottom: '0', top: (1 - EXT) * 100 + '%', width: '100%', height: EXT * 100 + '%', zIndex: '1', pointerEvents: 'none', opacity: '0', transition: 'opacity 1.2s ease' });
+
+  const scene = new THREE.Scene();
+  scene.fog = new THREE.Fog(0x0b0e1a, 3.2, 6.4);
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+  scene.environmentIntensity = 0.55;
+  const camera = new THREE.PerspectiveCamera(28, 2, 0.1, 30);
+
+  const R = 1, CW = 2 * Math.PI * R / cards.length * 0.86, CH = CW * 1.6, top = CH / 2;
+  const loader = new THREE.ImageBitmapLoader(); loader.setOptions({ imageOrientation: 'none' });
+
+  // sugar paste / marble surface
+  function paste(size, seed, veins) {
+    const c = document.createElement('canvas'); c.width = c.height = size; const g = c.getContext('2d');
+    g.fillStyle = '#fbfaf7'; g.fillRect(0, 0, size, size);
+    let s = seed; const rnd = () => (s = (s * 16807) % 2147483647) / 2147483647;
+    for (let v = 0; v < veins; v++) {
+      let x = rnd() * size, y = rnd() * size, a = rnd() * Math.PI * 2;
+      g.strokeStyle = `rgba(150,145,138,${0.03 + rnd() * 0.07})`; g.lineWidth = 0.6 + rnd() * 2; g.beginPath(); g.moveTo(x, y);
+      for (let k = 0; k < 50; k++) { a += (rnd() - 0.5) * 0.7; x += Math.cos(a) * size * 0.012; y += Math.sin(a) * size * 0.012; g.lineTo(x, y); }
+      g.stroke();
+    }
+    const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; t.wrapS = t.wrapT = THREE.RepeatWrapping; return t;
+  }
+  const icing = new THREE.MeshPhysicalMaterial({ map: paste(512, 7, 10), color: 0xfdfbf7, roughness: 0.62, sheen: 0.6, sheenColor: new THREE.Color(0xffffff), clearcoat: 0.15 });
+  const pearlMat = new THREE.MeshPhysicalMaterial({ color: 0xfffcf6, roughness: 0.18, metalness: 0.0, clearcoat: 1, sheen: 1, sheenColor: new THREE.Color(0xfff2e0), iridescence: 0.35 });
+  function pearls(radius, y, size, count, parent) {
+    const m = new THREE.InstancedMesh(new THREE.SphereGeometry(size, 14, 10), pearlMat, count);
+    const o = new THREE.Object3D();
+    for (let k = 0; k < count; k++) { const a = k / count * Math.PI * 2; o.position.set(Math.sin(a) * radius, y, Math.cos(a) * radius); o.updateMatrix(); m.setMatrixAt(k, o.matrix); }
+    m.castShadow = true; parent.add(m); return m;
+  }
+
+  // cake
+  const ring = new THREE.Group(); scene.add(ring);
+  const tier1 = new THREE.Mesh(new THREE.CylinderGeometry(R - 0.035, R - 0.035, CH, 128, 1, true), icing); ring.add(tier1);
+  const lid = new THREE.Mesh(new THREE.CylinderGeometry(R + 0.03, R + 0.03, 0.05, 128), icing);
+  lid.position.y = top + 0.025; lid.castShadow = true; lid.receiveShadow = true; ring.add(lid);
+  pearls(R + 0.03, top + 0.05, 0.014, 150, ring);
+  pearls(R + 0.035, top + 0.002, 0.012, 170, ring);
+  const base = new THREE.Mesh(new THREE.CylinderGeometry(R + 0.07, R + 0.09, 0.06, 128), icing);
+  base.position.y = -top - 0.03; base.receiveShadow = true; ring.add(base);
+  pearls(R + 0.075, -top + 0.004, 0.013, 170, ring);
+  // bigger tier under the card tier
+  const R0 = R * 1.34, H0 = CH * 0.62;
+  const tier0 = new THREE.Mesh(new THREE.CylinderGeometry(R0, R0, H0, 160), icing);
+  tier0.position.y = -top - 0.06 - H0 / 2; tier0.receiveShadow = true; ring.add(tier0);
+  pearls(R0 + 0.004, -top - 0.06 - 0.012, 0.015, 220, ring);
+  pearls(R0 + 0.004, -top - 0.06 - H0 * 0.55, 0.011, 220, ring);
+  const R2 = R * 0.6, H2 = CH * 0.42;
+  const tier2 = new THREE.Mesh(new THREE.CylinderGeometry(R2, R2, H2, 128), icing);
+  tier2.position.y = top + 0.05 + H2 / 2; tier2.castShadow = true; tier2.receiveShadow = true; ring.add(tier2);
+  pearls(R2 + 0.004, top + 0.05 + 0.012, 0.012, 110, ring);
+  pearls(R2 + 0.004, top + 0.05 + H2 - 0.004, 0.011, 110, ring);
+  const topY = top + 0.05 + H2;
+
+  // card textures
+  function wrap(g, text, x, y, maxW, lh) {
+    const words = text.split(/\s+/); let line = '';
+    for (const w of words) { const t = line ? line + ' ' + w : w; if (g.measureText(t).width > maxW && line) { g.fillText(line, x, y); y += lh; line = w; } else line = t; }
+    if (line) g.fillText(line, x, y); return y;
+  }
+  function roundRect(g, x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
+  function cardTexture(card, bmp) {
+    const W = 640, H = Math.round(W * 1.6); const c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d');
+    roundRect(g, 0, 0, W, H, 22); g.clip(); g.fillStyle = '#1b1c22'; g.fillRect(0, 0, W, H);
+    if (bmp) { const s = Math.max(W / bmp.width, H / bmp.height), w = bmp.width * s, h = bmp.height * s; g.drawImage(bmp, (W - w) / 2, (H - h) / 2, w, h); }
+    const gr = g.createLinearGradient(0, H * 0.45, 0, H); gr.addColorStop(0, 'rgba(8,8,12,0)'); gr.addColorStop(0.45, 'rgba(8,8,12,.86)'); gr.addColorStop(1, 'rgba(8,8,12,.94)');
+    g.fillStyle = gr; g.fillRect(0, H * 0.45, W, H * 0.55);
+    const pad = 38; let y = H * 0.72;
+    g.fillStyle = 'rgba(255,255,255,.75)'; g.font = `500 22px ${SANS}`; g.fillText(card.n.trim(), pad, y);
+    g.font = `400 58px ${SERIF}`; g.fillStyle = '#ffffff'; y = wrap(g, card.t.toUpperCase(), pad, y + 64, W - pad * 2, 60);
+    g.fillStyle = '#e25b1e'; g.fillRect(pad, y + 22, 54, 3);
+    g.font = `400 27px ${SANS}`; g.fillStyle = 'rgba(255,255,255,.86)'; wrap(g, card.l, pad, y + 74, W - pad * 2, 38);
+    const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = renderer.capabilities.getMaxAnisotropy(); return t;
+  }
+  function backTexture() {
+    const W = 320, H = 512; const c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d');
+    roundRect(g, 0, 0, W, H, 11); g.clip(); g.fillStyle = '#f4f1ec'; g.fillRect(0, 0, W, H);
+    g.strokeStyle = 'rgba(17,17,17,.16)'; g.lineWidth = 2; roundRect(g, 18, 18, W - 36, H - 36, 8); g.stroke();
+    g.fillStyle = 'rgba(17,17,17,.5)'; g.font = `400 30px ${SERIF}`; g.textAlign = 'center'; g.fillText('COVER PAGE', W / 2, H / 2);
+    const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+  }
+  const backMat = new THREE.MeshStandardMaterial({ map: backTexture(), roughness: 0.7, transparent: true, alphaTest: 0.5 });
+
+  const bubTex = new Map();
+  function bubble(text, accent) {
+    const key = text + accent; if (bubTex.has(key)) return bubTex.get(key);
+    const c = document.createElement('canvas'), g = c.getContext('2d'); const f = `400 34px ${SANS}`; g.font = f;
+    const w = Math.ceil(g.measureText(text).width) + 56, h = 70; c.width = w; c.height = h + 22; g.font = f;
+    g.fillStyle = accent ? 'rgba(226,91,30,.94)' : 'rgba(255,253,249,.95)';
+    roundRect(g, 2, 2, w - 4, h - 4, (h - 4) / 2); g.fill();
+    g.beginPath(); g.arc(26, h + 4, 7, 0, 7); g.fill(); g.beginPath(); g.arc(16, h + 15, 4, 0, 7); g.fill();
+    g.fillStyle = accent ? '#ffffff' : '#141311'; g.textBaseline = 'middle'; g.fillText(text, 28, h / 2 + 1);
+    const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; const v = { t, a: c.width / c.height }; bubTex.set(key, v); return v;
+  }
+
+  // cards, hinged at the bottom so they can flip up onto the cake
+  const bubbles = [], hinges = [];
+  const geoCard = new THREE.PlaneGeometry(CW, CH); geoCard.translate(0, CH / 2, 0);
+  const geoBub = new THREE.PlaneGeometry(1, 1);
+  const cardMats = [];
+  cards.forEach((card, i) => {
+    const phi = i / cards.length * Math.PI * 2;
+    const g = new THREE.Group(); g.position.set(Math.sin(phi) * R, -top, Math.cos(phi) * R); g.rotation.y = phi; ring.add(g);
+    const hinge = new THREE.Group(); g.add(hinge); hinges.push(hinge);
+    const mat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.55, transparent: true, alphaTest: 0.5, map: cardTexture(card, null) });
+    const m = new THREE.Mesh(geoCard, mat); m.castShadow = true; hinge.add(m); cardMats.push({ card, mat });
+    const b = new THREE.Mesh(geoCard, backMat); b.rotation.y = Math.PI; b.position.z = -0.002; hinge.add(b);
+    const mult = 0.85 + ((i * 37) % 45) / 100;
+    for (let k = 0; k < 3; k++) {
+      const mesh = new THREE.Mesh(geoBub, new THREE.MeshBasicMaterial({ transparent: true, depthWrite: false, opacity: 0, fog: true }));
+      mesh.position.z = 0.012; mesh.renderOrder = 2; hinge.add(mesh);
+      bubbles.push({ mesh, card, k, i, start: -k * 1.25 * mult, dur: (2.8 + ((i + k * 7) % 5) * 0.35) * mult, idx: (k * 3 + i) % Math.max(1, card.tasks.length), x: 0 });
+    }
+  });
+  cardMats.forEach(({ card, mat }) => {
+    loader.load(BASE + 'img/' + (card.i + 1) + '.webp', bmp => { const old = mat.map; mat.map = cardTexture(card, bmp); mat.needsUpdate = true; old && old.dispose(); }, undefined, () => {});
+  });
+
+  // the couple: porcelain cake toppers that rise through the top tier and get dressed
+  const clip = new THREE.Plane(new THREE.Vector3(0, 1, 0), -topY + 0.001);
+  const pm = (c, extra) => new THREE.MeshPhysicalMaterial(Object.assign({ color: c, roughness: 0.45, sheen: 0.8, sheenColor: new THREE.Color(0xffffff), clearcoat: 0.35, clippingPlanes: [clip], clipShadows: true }, extra || {}));
+  const S = CH * 1.0;
+  const V = (pts, sc) => pts.map(([r, y]) => new THREE.Vector2(r * S * sc, y * S));
+  const couple = new THREE.Group(); scene.add(couple);
+
+  // bride
+  const bride = new THREE.Group(); bride.position.x = 0.085 * S; couple.add(bride);
+  const brideSkin = pm(0xf3e6dc);
+  const dressMat = pm(0xd9c3ad);
+  const skirt = new THREE.Mesh(new THREE.LatheGeometry(V([[0, 0], [0.3, 0], [0.32, 0.03], [0.28, 0.12], [0.21, 0.28], [0.13, 0.45], [0.08, 0.58], [0.07, 0.62]], 0.62), 80), dressMat);
+  skirt.castShadow = true; bride.add(skirt);
+  const bodice = new THREE.Mesh(new THREE.LatheGeometry(V([[0.07, 0.62], [0.085, 0.7], [0.095, 0.76], [0.07, 0.8], [0.035, 0.82], [0.03, 0.85]], 0.62), 48), dressMat); bodice.castShadow = true; bride.add(bodice);
+  const bHead = new THREE.Mesh(new THREE.SphereGeometry(0.045 * S, 40, 28), brideSkin); bHead.position.y = 0.9 * S; bHead.scale.set(0.9, 1.08, 0.95); bHead.castShadow = true; bride.add(bHead);
+  const hairMat = pm(0x6b5443);
+  const bun = new THREE.Mesh(new THREE.SphereGeometry(0.024 * S, 20, 14), hairMat); bun.position.set(0, 0.935 * S, -0.033 * S); bride.add(bun);
+  const veilMat = pm(0xffffff, { transparent: true, opacity: 0, side: THREE.DoubleSide, depthWrite: false, roughness: 0.6 });
+  const veil = new THREE.Mesh(new THREE.LatheGeometry(V([[0.02, 0.95], [0.06, 0.86], [0.11, 0.6], [0.16, 0.3], [0.22, 0.04]], 0.62), 48, Math.PI * 0.55, Math.PI * 0.9), veilMat); bride.add(veil);
+  const bouquet = new THREE.Group();
+  const flowerMat = pm(0xffffff);
+  for (let k = 0; k < 9; k++) { const s = new THREE.Mesh(new THREE.SphereGeometry(0.016 * S, 14, 10), flowerMat); s.position.set(Math.cos(k * 2.4) * 0.02 * S, Math.sin(k * 1.7) * 0.012 * S, Math.sin(k * 2.4) * 0.02 * S); bouquet.add(s); }
+  bouquet.position.set(-0.02 * S, 0.64 * S, 0.07 * S); bride.add(bouquet);
+
+  // groom
+  const groom = new THREE.Group(); groom.position.x = -0.085 * S; couple.add(groom);
+  const trouserMat = pm(0x3f4f6e), shirtMat = pm(0xbcc8d6), skin = pm(0xeedccd), shoeMat = pm(0x2a221c);
+  const legGeo = new THREE.CylinderGeometry(0.026 * S, 0.022 * S, 0.5 * S, 20); legGeo.translate(0, 0.25 * S, 0);
+  const legL = new THREE.Mesh(legGeo, trouserMat); legL.position.x = -0.03 * S; groom.add(legL);
+  const legR = new THREE.Mesh(legGeo, trouserMat); legR.position.x = 0.03 * S; groom.add(legR);
+  [-0.03, 0.03].forEach(x => { const sh = new THREE.Mesh(new THREE.BoxGeometry(0.05 * S, 0.025 * S, 0.08 * S), shoeMat); sh.position.set(x * S, 0.012 * S, 0.012 * S); groom.add(sh); });
+  const torso = new THREE.Mesh(new THREE.LatheGeometry(V([[0.06, 0.48], [0.085, 0.52], [0.09, 0.6], [0.1, 0.72], [0.105, 0.78], [0.05, 0.82], [0.03, 0.84]], 0.95), 40), shirtMat);
+  torso.castShadow = true; groom.add(torso);
+  const armGeo = new THREE.CylinderGeometry(0.02 * S, 0.018 * S, 0.3 * S, 14); armGeo.translate(0, -0.15 * S, 0);
+  const armL = new THREE.Mesh(armGeo, shirtMat); armL.position.set(-0.105 * S, 0.78 * S, 0); armL.rotation.z = -0.12; groom.add(armL);
+  const armR = new THREE.Mesh(armGeo, shirtMat); armR.position.set(0.105 * S, 0.78 * S, 0); armR.rotation.z = 0.35; armR.rotation.x = -0.2; groom.add(armR);
+  const gHead = new THREE.Mesh(new THREE.SphereGeometry(0.047 * S, 40, 28), skin); gHead.position.y = 0.9 * S; gHead.scale.set(0.92, 1.08, 0.96); gHead.castShadow = true; groom.add(gHead);
+  const gHair = new THREE.Mesh(new THREE.SphereGeometry(0.049 * S, 30, 20, 0, Math.PI * 2, 0, Math.PI * 0.5), hairMat); gHair.position.y = 0.915 * S; groom.add(gHair);
+  // tuxedo parts that appear while dressing
+  const jacketMat = pm(0x15171d, { transparent: true, opacity: 0, roughness: 0.38 });
+  const jacket = new THREE.Mesh(new THREE.LatheGeometry(V([[0.07, 0.42], [0.095, 0.5], [0.098, 0.6], [0.106, 0.72], [0.11, 0.785], [0.055, 0.82]], 0.97), 40, Math.PI * 0.12, Math.PI * 1.76), jacketMat); groom.add(jacket);
+  const tie = new THREE.Mesh(new THREE.BoxGeometry(0.05 * S, 0.018 * S, 0.012 * S), pm(0x0d0e12, { transparent: true, opacity: 0 })); tie.position.set(0, 0.812 * S, 0.068 * S); groom.add(tie);
+  const flower = new THREE.Mesh(new THREE.SphereGeometry(0.013 * S, 12, 10), pm(0xffffff, { transparent: true, opacity: 0 })); flower.position.set(0.055 * S, 0.74 * S, 0.085 * S); groom.add(flower);
+
+  couple.position.y = topY;
+  const halo = new THREE.PointLight(0xfff8f0, 0.7, 1.4, 2); halo.position.set(0, topY + 0.5 * S, 0.3); scene.add(halo);
+
+  // colours for the dressing transition
+  const C = (h) => new THREE.Color(h);
+  const DRESS = [
+    [dressMat, C(0xd9c3ad), C(0xffffff)],
+    [trouserMat, C(0x3f4f6e), C(0x15171d)],
+    [shirtMat, C(0xbcc8d6), C(0xffffff)],
+    [shoeMat, C(0x6b4a33), C(0x0d0d10)],
+  ];
+
+  // light
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x20243a, 0.55));
+  const key = new THREE.SpotLight(0xfff6ea, 26, 12, Math.PI / 6.5, 0.6, 1.6);
+  key.position.set(1.6, 3.6, 3.2); key.target.position.set(0, top, 0); key.castShadow = true;
+  key.shadow.mapSize.set(1024, 1024); key.shadow.bias = -0.0004; key.shadow.normalBias = 0.02;
+  scene.add(key, key.target);
+  const rim = new THREE.DirectionalLight(0xcfd8ff, 0.9); rim.position.set(-2.5, 1.6, -3); scene.add(rim);
+  const fill = new THREE.DirectionalLight(0xffffff, 0.35); fill.position.set(-2, 0.6, 2.5); scene.add(fill);
+
+  // framing: the first tier with its cards, the top tier and the couple
+  const yMin = -top - 0.06 - CH * 0.34, yMax = topY + S * 1.0;
+  const target = new THREE.Vector3(0, (yMin + yMax) / 2, 0);
+  const dir = new THREE.Vector3(0, 0.15, 1).normalize();
+  function frame() {
+    const w = stage.clientWidth, h = stage.clientHeight * EXT; if (!w || !h) return;
+    renderer.setSize(w, h, false); camera.aspect = w / h;
+    const vf = THREE.MathUtils.degToRad(camera.fov), hf = 2 * Math.atan(Math.tan(vf / 2) * camera.aspect);
+    const needW = (R0 + 0.06) * 2, needH = (yMax - yMin) * 1.04;
+    const d = Math.max((needW / 2) / Math.tan(hf / 2), (needH / 2) / Math.tan(vf / 2)) + R * 1.1;
+    camera.position.copy(target).addScaledVector(dir, d); camera.lookAt(target); camera.updateProjectionMatrix();
+    scene.fog.near = d - R * 0.2; scene.fog.far = d + R * 2.6;
+  }
+  frame();
+  new ResizeObserver(frame).observe(stage);
+  stage.appendChild(cv);
+
+  const shade = stage.querySelector('.cpw-shade');
+  const anim = shade && shade.getAnimations ? shade.getAnimations()[0] : null;
+  const t0 = performance.now();
+  const now = () => { const ms = anim && anim.currentTime != null ? Number(anim.currentTime) : performance.now() - t0; return ((ms / 1000) % LOOP + LOOP) % LOOP; };
+
+  let visible = true, raf = 0, shown = false, last = 0;
+  new IntersectionObserver(e => { visible = e[0].isIntersecting; if (visible && !raf) raf = requestAnimationFrame(loop); }, { rootMargin: '100px' }).observe(stage);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && visible && !raf) raf = requestAnimationFrame(loop); });
+
+  function loop(ms) {
+    raf = 0; if (!visible || document.hidden) return;
+    const t = now();
+    ring.rotation.y = -angleAt(t);
+
+    // cards flip up at the start, fold down at the very end so the loop closes
+    hinges.forEach((h, i) => {
+      const up = sstep(0.4 + i * 0.11, 1.4 + i * 0.11, t) * (1 - sstep(30.4 + i * 0.1, 31.2 + i * 0.1, t));
+      h.rotation.x = (1 - up) * Math.PI * 0.5;
+    });
+
+    // the couple rises through the top tier, then sinks before the loop restarts
+    const rise = sstep(0.2, 3.4, t) * (1 - sstep(31.0, 32.8, t));
+    couple.position.y = topY - (1 - rise) * S * 1.05;
+    couple.rotation.y = Math.sin(ms / 1000 * 0.6) * 0.45;
+
+    // dressing: casual clothes turn into the wedding outfits
+    const d = sstep(4, 20, t);
+    for (const [m, a, b] of DRESS) m.color.copy(a).lerp(b, d);
+    const full = 0.55 + 0.45 * sstep(6, 18, t);
+    skirt.scale.set(full, 1, full);
+    veilMat.opacity = 0.34 * sstep(12, 20, t);
+    bouquet.scale.setScalar(Math.max(0.001, sstep(14, 21, t)));
+    jacketMat.opacity = sstep(8, 16, t); tie.material.opacity = sstep(12, 17, t); flower.material.opacity = sstep(15, 20, t);
+    jacket.visible = jacketMat.opacity > 0.01; tie.visible = tie.material.opacity > 0.01; flower.visible = flower.material.opacity > 0.01;
+
+    const dt = Math.min(0.05, last ? (ms - last) / 1000 : 0.016); last = ms;
+    for (const b of bubbles) {
+      b.start += dt; let p = b.start / b.dur;
+      if (p < 0) { b.mesh.material.opacity = 0; continue; }
+      if (p >= 1) { b.start = 0; p = 0; b.idx = (b.idx + 3) % Math.max(1, b.card.tasks.length); }
+      const task = b.card.tasks[b.idx]; if (!task) continue;
+      const bt = bubble(task, (b.idx % 3) === 2);
+      if (b.mesh.material.map !== bt.t) { b.mesh.material.map = bt.t; b.mesh.material.needsUpdate = true; b.x = (((b.idx * 53) % 40) / 100 - 0.2) * CW; }
+      const hgt = CW * 0.17; b.mesh.scale.set(hgt * bt.a, hgt, 1);
+      b.mesh.position.x = b.x + Math.sin(p * 3.1 + b.k) * CW * 0.04;
+      b.mesh.position.y = CH * 0.44 + p * CH * 0.3;
+      const upNow = 1 - hinges[b.i].rotation.x / (Math.PI * 0.5);
+      b.mesh.material.opacity = (p < 0.18 ? p / 0.18 : p > 0.7 ? Math.max(0, (1 - p) / 0.3) : 1) * upNow;
+    }
+    renderer.render(scene, camera);
+    if (!shown) { shown = true; requestAnimationFrame(() => { cv.style.opacity = '1'; stage.classList.add('cpw-gl'); stage.style.overflow = 'visible'; stage.style.contain = 'none'; }); }
+    raf = requestAnimationFrame(loop);
+  }
+  raf = requestAnimationFrame(loop);
+});
