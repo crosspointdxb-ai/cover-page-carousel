@@ -65,7 +65,7 @@ ready(async () => {
   cv.className = 'cpw-gl-canvas';
   cv.setAttribute('aria-hidden', 'true');
   const EXT = 1.34;
-  Object.assign(cv.style, { position: 'absolute', left: '0', right: '0', bottom: '0', top: (1 - EXT) * 100 + '%', width: '100%', height: EXT * 100 + '%', zIndex: '1', pointerEvents: 'none', opacity: '0', transition: 'opacity 1.2s ease' });
+  Object.assign(cv.style, { position: 'absolute', left: '0', top: '0', width: '100%', height: '100%', zIndex: '0', pointerEvents: 'none', opacity: '0', transition: 'opacity 1.2s ease' });
 
   // blurred reception backdrop: warm chandelier bokeh, flower arrangements, a mirrored table
   (() => {
@@ -427,37 +427,40 @@ ready(async () => {
   const target = new THREE.Vector3(0, top * 0.75, 0);
   const dir = new THREE.Vector3(0, 0.15, 1).normalize();
   const camBase = { d: 4 };
+  // the canvas covers the WHOLE hero (no band above or below it); the cake is framed on the stage box
+  // and the render window is shifted with setViewOffset so the cake lands exactly where the stage is
+  const hero = stage.closest('.cpw-hero') || stage.parentElement;
   function frame() {
-    const w = stage.clientWidth, h = stage.clientHeight * EXT; if (!w || !h) return;
-    renderer.setSize(w, h, false); camera.aspect = w / h;
+    const HR = hero.getBoundingClientRect(), SR = stage.getBoundingClientRect();
+    const w = SR.width, sh = stage.clientHeight, h = sh * EXT, W = Math.round(HR.width), H = Math.round(HR.height); if (!w || !h || !W || !H) return;
+    renderer.setSize(W, H, false); camera.aspect = w / h;
     const vf = THREE.MathUtils.degToRad(camera.fov), hf = 2 * Math.atan(Math.tan(vf / 2) * camera.aspect);
     const needW = (R0 + 0.06) * 2, needH = (yMax - yMin) * 1.04;
     const d = Math.max((needW / 2) / Math.tan(hf / 2), (needH / 2) / Math.tan(vf / 2)) + R * 1.1;
     camBase.d = d; camera.zoom = 1.62; camera.position.copy(target).addScaledVector(dir, d); camera.lookAt(target);
-    // desktop: the cake sits 20% to the right and 20% higher, clear of the title, so the cards read better
-    if (w >= 992) camera.setViewOffset(w, h, -0.2 * w, 0.2 * h, w, h); else camera.clearViewOffset();
+    // frame box = stage width x (stage height * EXT), its top EXT above the stage; desktop: cake 20% right and 20% higher
+    const fl = SR.left - HR.left, ft = (SR.top - HR.top) - (EXT - 1) * sh, desk = w >= 992;
+    camera.setViewOffset(w, h, -fl + (desk ? -0.2 * w : 0), -ft + (desk ? 0.2 * h : 0), W, H);
     camera.updateProjectionMatrix();
     scene.fog.near = d - R * 0.2; scene.fog.far = d + R * 2.6;
   }
   frame();
-  new ResizeObserver(frame).observe(stage);
-  stage.appendChild(cv);
+  { const ro = new ResizeObserver(frame); ro.observe(stage); ro.observe(hero); addEventListener('load', frame); if (document.fonts) document.fonts.ready.then(frame); setTimeout(frame, 1500); }
+  hero.insertBefore(cv, hero.firstChild);
   // fine film grain on top of the render, so it reads like a photograph rather than CGI
   (() => {
     const c = document.createElement('canvas'); c.width = c.height = 160; const g = c.getContext('2d'); const im = g.createImageData(160, 160);
     for (let k = 0; k < im.data.length; k += 4) { const v = 110 + Math.random() * 145 | 0; im.data[k] = im.data[k + 1] = im.data[k + 2] = v; im.data[k + 3] = 255; }
     g.putImageData(im, 0, 0);
     const gr = document.createElement('div'); gr.setAttribute('aria-hidden', 'true');
-    Object.assign(gr.style, { position: 'absolute', left: '0', right: '0', bottom: '0', top: cv.style.top, zIndex: '1', pointerEvents: 'none', backgroundImage: `url(${c.toDataURL()})`, opacity: '0.07', mixBlendMode: 'overlay' });
-    stage.appendChild(gr);
+    Object.assign(gr.style, { position: 'absolute', left: '0', right: '0', bottom: '0', top: '0', zIndex: '0', pointerEvents: 'none', backgroundImage: `url(${c.toDataURL()})`, opacity: '0.07', mixBlendMode: 'overlay' });
+    hero.insertBefore(gr, cv.nextSibling);
     let f = 0; setInterval(() => { f = (f + 1) % 4; gr.style.backgroundPosition = `${f * 37}px ${f * 59}px`; }, 90);
   })();
 
   const shade = stage.querySelector('.cpw-shade');
   if (shade) shade.style.top = (1 - EXT) * 100 + '%';
-  // soft top and bottom edges on everything that extends past the stage, so no hard band shows on any screen
-  const FADE = 'linear-gradient(to bottom, transparent 0%, #000 14%)';
-  for (const el of [cv, stage.lastElementChild]) if (el) { el.style.webkitMaskImage = FADE; el.style.maskImage = FADE; }
+  // no masks: nothing fades to black at the top or bottom of the hero any more
   // the quote overlay darkens the whole hero, not only the stage: it runs from the canvas top to past the hero's bottom edge
   // no dark veil during the quotes: the cake stays fully visible (the overlay keeps only its timing role)
   if (shade) shade.style.background = 'none';
