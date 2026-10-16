@@ -64,7 +64,7 @@ ready(async () => {
   const cv = renderer.domElement;
   cv.className = 'cpw-gl-canvas';
   cv.setAttribute('aria-hidden', 'true');
-  const EXT = 1.18;
+  const EXT = 1.34;
   Object.assign(cv.style, { position: 'absolute', left: '0', right: '0', bottom: '0', top: (1 - EXT) * 100 + '%', width: '100%', height: EXT * 100 + '%', zIndex: '1', pointerEvents: 'none', opacity: '0', transition: 'opacity 1.2s ease' });
 
   // blurred reception backdrop: warm chandelier bokeh, flower arrangements, a mirrored table
@@ -354,7 +354,7 @@ ready(async () => {
 
   // framing: the first tier with its cards, the top tier and the couple
   const yMin = -top - 0.06 - H0 - 0.16, yMax = topY + S * 1.0;
-  const target = new THREE.Vector3(0, (yMin + yMax) / 2 * 0.5 + top * 0.25, 0);
+  const target = new THREE.Vector3(0, top * 0.75, 0);
   const dir = new THREE.Vector3(0, 0.15, 1).normalize();
   const camBase = { d: 4 };
   function frame() {
@@ -363,7 +363,7 @@ ready(async () => {
     const vf = THREE.MathUtils.degToRad(camera.fov), hf = 2 * Math.atan(Math.tan(vf / 2) * camera.aspect);
     const needW = (R0 + 0.06) * 2, needH = (yMax - yMin) * 1.04;
     const d = Math.max((needW / 2) / Math.tan(hf / 2), (needH / 2) / Math.tan(vf / 2)) + R * 1.1;
-    camBase.d = d; camera.zoom = 1.2; camera.position.copy(target).addScaledVector(dir, d); camera.lookAt(target); camera.updateProjectionMatrix();
+    camBase.d = d; camera.zoom = 1.5; camera.position.copy(target).addScaledVector(dir, d); camera.lookAt(target); camera.updateProjectionMatrix();
     scene.fog.near = d - R * 0.2; scene.fog.far = d + R * 2.6;
   }
   frame();
@@ -395,7 +395,7 @@ ready(async () => {
     const t = now();
     ring.rotation.y = -angleAt(t);
     { const k = ms / 1000, ox = Math.sin(k * 0.21) * 0.035 + Math.sin(k * 0.53) * 0.008, oy = Math.sin(k * 0.17 + 1) * 0.02; camera.position.set(target.x + Math.sin(ox) * camBase.d * dir.z, target.y + dir.y * camBase.d + oy, target.z + Math.cos(ox) * camBase.d * dir.z); camera.lookAt(target.x, target.y + oy * 0.4, target.z); }
-    wedBand.rotation.y = -ms / 1000 * 0.06;
+    const cakeA = ms / 1000 * 0.07; cake.rotation.y = cakeA; wedBand.rotation.y = cakeA;
 
     // cards flip up at the start, fold down at the very end so the loop closes
     hinges.forEach((h, i) => {
@@ -406,7 +406,7 @@ ready(async () => {
     // the couple rises through the top tier, then sinks before the loop restarts
     const rise = sstep(0.2, 3.4, t) * (1 - sstep(31.0, 32.8, t));
     couple.position.y = topY - (1 - rise) * S * 1.05;
-    couple.rotation.y = Math.sin(ms / 1000 * 0.6) * 0.45;
+    couple.rotation.y = cakeA + Math.sin(ms / 1000 * 0.6) * 0.2;
 
     // dressing: casual clothes turn into the wedding outfits
     const d = sstep(4, 20, t);
