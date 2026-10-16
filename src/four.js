@@ -162,6 +162,20 @@
 .cpx-res .cpx-sheet{background:none;padding:0;gap:clamp(8px,.8vw,14px);grid-template-columns:repeat(auto-fill,minmax(clamp(120px,11vw,190px),1fr))}.cpx-res .cpx-fr{border-radius:4px;box-shadow:0 18px 40px -22px rgba(0,0,0,.45)}
 .cpx-fr img,.cpx-cap{transition-delay:inherit}
 @media (max-width:600px){.cpx-bfr{flex-wrap:wrap;border-radius:18px;padding:10px 14px}.cpx-bfr .cpx-btn{width:100%}}
+/* minimal design system (cpa-service-pages Part 5): outlined pills, no fills, no shadows, hairlines */
+.cpx-fact{margin-top:10px}
+.cpx-btn{background:transparent!important;color:var(--ink)!important;box-shadow:inset 0 0 0 1px var(--ink)!important;padding:13px 26px!important;font-size:12.5px!important;letter-spacing:.14em!important}
+.cpx-btn:hover{background:rgba(0,0,0,.06)!important}
+.cpx-chip[aria-pressed=true]{background:rgba(0,0,0,.06)!important;color:var(--ink)!important;border-color:var(--ink)!important;box-shadow:inset 0 0 0 1px var(--ink)}
+.cpx-paper{box-shadow:none!important;border:1px solid rgba(0,0,0,.14)}
+.cpx-res .cpx-fr{box-shadow:none!important}
+.cpx-pkn em{background:transparent!important;color:var(--ink)!important;box-shadow:inset 0 0 0 1px rgba(0,0,0,.22)}
+.cpx-quote{border-color:rgba(0,0,0,.22)!important}.cpx-quote::before{background:var(--ink)!important;animation:none!important}
+.cpx-mo.on .cpx-dot{background:#fff!important;color:var(--ink)!important;border-color:var(--ink)!important}
+.cpx-nl{background:var(--ink)}
+.cpx-dots i.cur{background:var(--ink)!important}.cpx-dots i.on{background:rgba(0,0,0,.45)!important}
+.cpx-range::-webkit-slider-thumb{box-shadow:none!important}
+@media (max-width:600px){.cpx-btn{width:100%;padding:13px 14px!important;font-size:10.5px!important}}
 @media (max-width:1100px){.cpx-m{grid-template-columns:1fr}}
 @media (max-width:900px){.cpx-n{grid-template-columns:1fr;gap:26px;padding-left:46px}.cpx-n::before{left:15px;right:auto;top:0;bottom:0;width:1px;height:auto}.cpx-nl{left:15px;top:0;width:1px!important;height:var(--w,0%);transition:height 500ms cubic-bezier(.23,1,.32,1)}.cpx-dot{position:absolute;left:-46px;top:-4px}.cpx-t{margin-top:0}.cpx-mo .cpx-chips{flex-direction:row;flex-wrap:wrap}.cpx-sheet{grid-template-columns:repeat(4,minmax(0,1fr))}}
 @media (prefers-reduced-motion:reduce){.cpx *,.cpx *::before,.cpx *::after{animation:none!important;transition:none!important}}
