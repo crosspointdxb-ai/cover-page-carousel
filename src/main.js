@@ -56,8 +56,8 @@ ready(async () => {
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
   renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 1.75));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.05;
+  renderer.toneMapping = THREE.AgXToneMapping;
+  renderer.toneMappingExposure = 1.15;
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFShadowMap;
   renderer.localClippingEnabled = true;
@@ -354,20 +354,31 @@ ready(async () => {
 
   // framing: the first tier with its cards, the top tier and the couple
   const yMin = -top - 0.06 - H0 - 0.16, yMax = topY + S * 1.0;
-  const target = new THREE.Vector3(0, (yMin + yMax) / 2, 0);
+  const target = new THREE.Vector3(0, (yMin + yMax) / 2 * 0.5 + top * 0.25, 0);
   const dir = new THREE.Vector3(0, 0.15, 1).normalize();
+  const camBase = { d: 4 };
   function frame() {
     const w = stage.clientWidth, h = stage.clientHeight * EXT; if (!w || !h) return;
     renderer.setSize(w, h, false); camera.aspect = w / h;
     const vf = THREE.MathUtils.degToRad(camera.fov), hf = 2 * Math.atan(Math.tan(vf / 2) * camera.aspect);
     const needW = (R0 + 0.06) * 2, needH = (yMax - yMin) * 1.04;
     const d = Math.max((needW / 2) / Math.tan(hf / 2), (needH / 2) / Math.tan(vf / 2)) + R * 1.1;
-    camera.position.copy(target).addScaledVector(dir, d); camera.lookAt(target); camera.updateProjectionMatrix();
+    camBase.d = d; camera.zoom = 1.2; camera.position.copy(target).addScaledVector(dir, d); camera.lookAt(target); camera.updateProjectionMatrix();
     scene.fog.near = d - R * 0.2; scene.fog.far = d + R * 2.6;
   }
   frame();
   new ResizeObserver(frame).observe(stage);
   stage.appendChild(cv);
+  // fine film grain on top of the render, so it reads like a photograph rather than CGI
+  (() => {
+    const c = document.createElement('canvas'); c.width = c.height = 160; const g = c.getContext('2d'); const im = g.createImageData(160, 160);
+    for (let k = 0; k < im.data.length; k += 4) { const v = 110 + Math.random() * 145 | 0; im.data[k] = im.data[k + 1] = im.data[k + 2] = v; im.data[k + 3] = 255; }
+    g.putImageData(im, 0, 0);
+    const gr = document.createElement('div'); gr.setAttribute('aria-hidden', 'true');
+    Object.assign(gr.style, { position: 'absolute', left: '0', right: '0', bottom: '0', top: cv.style.top, zIndex: '1', pointerEvents: 'none', backgroundImage: `url(${c.toDataURL()})`, opacity: '0.07', mixBlendMode: 'overlay' });
+    stage.appendChild(gr);
+    let f = 0; setInterval(() => { f = (f + 1) % 4; gr.style.backgroundPosition = `${f * 37}px ${f * 59}px`; }, 90);
+  })();
 
   const shade = stage.querySelector('.cpw-shade');
   if (shade) shade.style.top = (1 - EXT) * 100 + '%';
@@ -383,6 +394,7 @@ ready(async () => {
     raf = 0; if (!visible || document.hidden) return;
     const t = now();
     ring.rotation.y = -angleAt(t);
+    { const k = ms / 1000, ox = Math.sin(k * 0.21) * 0.035 + Math.sin(k * 0.53) * 0.008, oy = Math.sin(k * 0.17 + 1) * 0.02; camera.position.set(target.x + Math.sin(ox) * camBase.d * dir.z, target.y + dir.y * camBase.d + oy, target.z + Math.cos(ox) * camBase.d * dir.z); camera.lookAt(target.x, target.y + oy * 0.4, target.z); }
     wedBand.rotation.y = -ms / 1000 * 0.06;
 
     // cards flip up at the start, fold down at the very end so the loop closes
