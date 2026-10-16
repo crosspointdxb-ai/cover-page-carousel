@@ -149,6 +149,7 @@
 .cpx-nav{display:flex;align-items:center;gap:12px;margin-top:auto;padding-top:18px}
 .cpx-skip{appearance:none;border:0;background:none;font:500 12px/1 Inter,sans-serif;letter-spacing:.16em;text-transform:uppercase;color:var(--mut);cursor:pointer;margin-left:auto}
 .cpx-nav [hidden],.cpx-send[hidden]{display:none!important}
+.cpx-em,.cpx-ph{margin-bottom:10px}.cpx-send .cpx-skip{margin-left:0}
 .cpx-ttl3{margin:4px 0 18px;line-height:1.1}.cpx-s1{font-family:Hurricane,cursive;font-size:clamp(28px,2.2vw,40px);color:var(--acc)}.cpx-s2{font-family:"Classy Vogue",Georgia,serif;font-size:clamp(24px,2vw,36px);letter-spacing:.06em}
 .cpx-bfr{display:flex;align-items:center;gap:12px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 6px 6px 22px;max-width:640px}
 .cpx-bfr .cpx-bud{border:0;font-family:"Classy Vogue",Georgia,serif;font-size:clamp(26px,2vw,36px);padding:4px 0;flex:1;min-width:0}
@@ -171,12 +172,12 @@
   var MENU = IT ? {
     Q: [['guests', 'Quanti ospiti?', 'num', '120', 1], ['where', 'Dove si sposa? Location o villa', 'text', 'Villa sul Lago di Como', 1], ['date', 'Quando? Anche indicativo', 'text', 'Giugno 2027', 0], ['style', 'Come volete il servizio?', 'chips', ['Servito', 'Buffet', 'Family style', 'Isole'], 0], ['aperitivo', 'Aperitivo', 'area', 'Bollicine, finger food, crudo', 0], ['antipasto', 'Antipasto', 'area', 'Vitello tonnato, burrata, tartare', 0], ['primo', 'Primo', 'area', 'Risotto alla milanese, ravioli', 0], ['secondo', 'Secondo', 'area', 'Pesce di lago, filetto, cotoletta', 0], ['dolce', 'Dolce e torta', 'area', 'Torta nuziale, sorbetto, mignon', 0], ['bar', 'Bevande e open bar', 'area', 'Vini, cocktail, open bar dopo cena', 0], ['note', 'Esigenze particolari', 'area', 'Vegetariani, allergie, bambini', 0]],
     next: 'Avanti', back: 'Indietro', skip: 'Salta', send: 'Invia il mio menu', req: 'Ci serve questa risposta per il preventivo.',
-    t1: 'Il vostro', t2: 'WEDDING DREAM', t3: 'menu', guests: 'ospiti', empty: 'rispondete, il menu si scrive da solo', note: 'Nota', done: 'Il vostro menu è pronto.',
+    t1: 'Il vostro', t2: 'WEDDING DREAM', t3: 'menu', guests: 'ospiti', empty: 'rispondete, il menu si scrive da solo', note: 'Nota', done: 'Dove vi mandiamo il preventivo?', em: 'Email', ph: 'Telefono', need: 'Email e telefono servono per inviarvi il preventivo.', sending: 'Invio', ok: 'Ricevuto. Il vostro preventivo su misura arriva entro 24 ore.', ko: 'Invio non riuscito, riprovate tra un attimo.',
     msg: 'Ciao Cover Page, ecco il menu dei nostri sogni'
   } : {
     Q: [['guests', 'How many guests?', 'num', '120', 1], ['where', 'Where is the wedding? Location or villa', 'text', 'Villa on Lake Como', 1], ['date', 'When? Even approximate', 'text', 'June 2027', 0], ['style', 'How do you want the service?', 'chips', ['Plated', 'Buffet', 'Family style', 'Food stations'], 0], ['aperitivo', 'Aperitivo', 'area', 'Bubbles, finger food, crudo', 0], ['antipasto', 'Starter', 'area', 'Vitello tonnato, burrata, tartare', 0], ['primo', 'First course', 'area', 'Risotto alla milanese, ravioli', 0], ['secondo', 'Main course', 'area', 'Lake fish, fillet, cotoletta', 0], ['dolce', 'Dessert and cake', 'area', 'Wedding cake, sorbet, petit fours', 0], ['bar', 'Drinks and open bar', 'area', 'Wines, cocktails, open bar after dinner', 0], ['note', 'Special requirements', 'area', 'Vegetarians, allergies, children', 0]],
     next: 'Next', back: 'Back', skip: 'Skip', send: 'Send my menu', req: 'We need this answer for the quote.',
-    t1: 'Your', t2: 'WEDDING DREAM', t3: 'menu', guests: 'guests', empty: 'answer, and the menu writes itself', note: 'Note', done: 'Your menu is ready.',
+    t1: 'Your', t2: 'WEDDING DREAM', t3: 'menu', guests: 'guests', empty: 'answer, and the menu writes itself', note: 'Note', done: 'Where do we send your quote?', em: 'Email', ph: 'Phone', need: 'We need your email and phone to send your quote.', sending: 'Sending', ok: 'Received. Your bespoke quote arrives within 24 hours.', ko: 'Sending failed, please try again in a moment.',
     msg: 'Hello Cover Page, here is our dream menu'
   };
   // a pen script for everything the couple writes
@@ -190,15 +191,40 @@
     var err = el('p', 'cpx-err'); ctl.appendChild(err);
     var nav = el('div', 'cpx-nav'), back = el('button', 'cpx-btn cpx-ghost', esc(MENU.back)), skip = el('button', 'cpx-skip', esc(MENU.skip)), next = el('button', 'cpx-btn', esc(MENU.next));
     back.type = skip.type = next.type = 'button'; nav.append(back, next, skip); ctl.appendChild(nav);
-    var send = el('div', 'cpx-send'), go = el('a', 'cpx-btn', esc(MENU.send)); go.target = '_blank'; go.rel = 'noopener'; send.appendChild(go); if (quote) send.appendChild(quote); ctl.appendChild(send);
-    go.addEventListener('click', function () { save('menu', A); });
+    var send = el('div', 'cpx-send'), go = el('button', 'cpx-btn', esc(MENU.send)); go.type = 'button'; send.appendChild(go); if (quote) send.appendChild(quote); ctl.appendChild(send);
+    var msgTxt = '';
+    // the menu is sent straight to Cover Page through the native Webflow form in this card (email notification, no WhatsApp step)
+    go.onclick = function () {
+      var em = stage.querySelector('.cpx-em'), ph = stage.querySelector('.cpx-ph');
+      if (!em || !ph || !em.value.trim() || !ph.value.trim() || !em.checkValidity()) { err.textContent = MENU.need; (em && !em.value.trim() ? em : ph).focus(); return; }
+      var form = document.getElementById('cpx-menu-form');
+      save('menu', A);
+      if (!form) { err.textContent = MENU.ko; return; }
+      form.querySelector('[name=Email]').value = em.value.trim(); form.querySelector('[name=Phone]').value = ph.value.trim(); form.querySelector('[name=Menu]').value = msgTxt;
+      go.disabled = true; go.textContent = MENU.sending; err.textContent = '';
+      var wrap = form.closest('.w-form'), t0 = Date.now();
+      (function watch() {
+        var done = wrap && wrap.querySelector('.w-form-done'), fail = wrap && wrap.querySelector('.w-form-fail');
+        if (done && getComputedStyle(done).display !== 'none') { send.innerHTML = ''; stage.innerHTML = '<p class="cpx-qt">' + MENU.ok + '</p>'; return; }
+        if (fail && getComputedStyle(fail).display !== 'none' || Date.now() - t0 > 15000) { go.disabled = false; go.textContent = MENU.send; err.textContent = MENU.ko; return; }
+        setTimeout(watch, 250);
+      })();
+      if (form.requestSubmit) form.requestSubmit(); else form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+    };
     var field;
     function ask() {
       err.textContent = ''; var q = Q[i];
       [].forEach.call(dots.children, function (d, k) { d.className = k < i ? 'on' : k === i ? 'cur' : ''; });
       var done = i >= Q.length;
       ctl.classList.toggle('cpx-fin', done); nav.hidden = done; send.hidden = !done;
-      if (done) { stage.innerHTML = '<p class="cpx-qt">' + MENU.done + '</p>'; draw(); return; }
+      if (done) {
+        stage.innerHTML = '<p class="cpx-qt">' + MENU.done + ' <span>*</span></p>';
+        var e1 = el('input', 'cpx-in cpx-big cpx-em'), p1 = el('input', 'cpx-in cpx-big cpx-ph');
+        e1.type = 'email'; e1.required = true; e1.placeholder = MENU.em; e1.autocomplete = 'email'; e1.setAttribute('aria-label', MENU.em);
+        p1.type = 'tel'; p1.required = true; p1.placeholder = MENU.ph; p1.autocomplete = 'tel'; p1.setAttribute('aria-label', MENU.ph);
+        stage.append(e1, p1); var ob = send.querySelector('.cpx-skip'); if (ob) ob.remove(); var bk = el('button', 'cpx-skip', esc(MENU.back)); bk.type = 'button'; bk.onclick = function () { i--; ask(); }; send.appendChild(bk);
+        draw(); return;
+      }
       stage.innerHTML = '<p class="cpx-qn">' + (i + 1) + ' / ' + Q.length + '</p><p class="cpx-qt">' + esc(q[1]) + (q[4] ? ' <span>*</span>' : '') + '</p>';
       if (q[2] === 'chips') {
         field = el('div', 'cpx-chips');
@@ -231,7 +257,7 @@
       if (A.note) h += '<p class="cpx-note"><b>' + MENU.note + '</b> ' + hw(A.note, 'n' + A.note) + '</p>';
       if (!any && !meta.length) h += '<span class="cpx-empty">' + MENU.empty + '</span>';
       paper.innerHTML = h;
-      go.href = wa(MENU.msg + '\n' + meta.join(', ') + '\n' + Q.slice(4).map(function (q) { return A[q[0]] ? q[1] + ': ' + A[q[0]] : ''; }).filter(Boolean).join('\n'));
+      msgTxt = meta.join(', ') + '\n' + Q.slice(4).map(function (q) { return A[q[0]] ? q[1] + ': ' + A[q[0]] : ''; }).filter(Boolean).join('\n');
     }
     ask();
   }
