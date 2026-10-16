@@ -5,6 +5,7 @@
 // Time follows the page's CSS quote overlay, so quotes and motion stay paired.
 import * as THREE from 'three';
 import { RoomEnvironment } from '../../t/examples/jsm/environments/RoomEnvironment.js';
+import { mergeGeometries } from '../../t/examples/jsm/utils/BufferGeometryUtils.js';
 
 const SCRIPT = document.currentScript;
 const BASE = (SCRIPT && SCRIPT.src ? SCRIPT.src.replace(/[^/]*$/, '') : './');
@@ -49,7 +50,7 @@ ready(async () => {
   }));
   if (!cards.length) return;
 
-  try { await Promise.race([Promise.all([document.fonts.load('60px "Classy Vogue"'), document.fonts.load('24px Inter')]), new Promise(r => setTimeout(r, 1500))]); } catch (e) {}
+  try { await Promise.race([Promise.all([document.fonts.load('60px "Classy Vogue"'), document.fonts.load('24px Inter'), document.fonts.load('80px Hurricane')]), new Promise(r => setTimeout(r, 1500))]); } catch (e) {}
   const SERIF = '"Classy Vogue", Georgia, serif', SANS = 'Inter, Helvetica, Arial, sans-serif';
 
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
@@ -66,8 +67,37 @@ ready(async () => {
   const EXT = 1.18;
   Object.assign(cv.style, { position: 'absolute', left: '0', right: '0', bottom: '0', top: (1 - EXT) * 100 + '%', width: '100%', height: EXT * 100 + '%', zIndex: '1', pointerEvents: 'none', opacity: '0', transition: 'opacity 1.2s ease' });
 
+  // blurred reception backdrop: warm chandelier bokeh, flower arrangements, a mirrored table
+  (() => {
+    const W = 800, H = 450, c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d');
+    let sd = 11; const rnd = () => (sd = (sd * 16807) % 2147483647) / 2147483647;
+    const bg = g.createRadialGradient(W / 2, H * 0.45, 40, W / 2, H * 0.5, W * 0.65);
+    bg.addColorStop(0, '#4a2e18'); bg.addColorStop(0.55, '#24170f'); bg.addColorStop(1, '#0b0e1a');
+    g.fillStyle = bg; g.fillRect(0, 0, W, H);
+    for (let k = 0; k < 700; k++) { // crystal strands
+      const x = W * (0.08 + 0.84 * rnd()), y = H * 0.62 * Math.pow(rnd(), 0.8), r = 1 + rnd() * 3.5;
+      g.fillStyle = `rgba(255,${200 + rnd() * 40 | 0},${140 + rnd() * 60 | 0},${0.12 + rnd() * 0.45})`; g.beginPath(); g.arc(x, y, r, 0, 7); g.fill();
+    }
+    const fl = ['rgba(214,92,96,.75)', 'rgba(236,170,160,.7)', 'rgba(250,236,226,.7)', 'rgba(178,58,52,.7)', 'rgba(240,150,90,.6)'];
+    [[0.1, 0.58], [0.26, 0.66], [0.78, 0.6], [0.92, 0.66], [0.6, 0.72], [0.4, 0.74]].forEach(([cx, cy]) => {
+      for (let k = 0; k < 40; k++) { g.fillStyle = fl[k % fl.length]; g.beginPath(); g.arc(W * cx + (rnd() - 0.5) * 95, H * cy + (rnd() - 0.5) * 60, 7 + rnd() * 13, 0, 7); g.fill(); }
+      g.fillStyle = 'rgba(60,80,40,.5)'; for (let k = 0; k < 12; k++) { g.beginPath(); g.arc(W * cx + (rnd() - 0.5) * 110, H * cy + (rnd() - 0.2) * 65, 5 + rnd() * 9, 0, 7); g.fill(); }
+    });
+    const tb = g.createLinearGradient(0, H * 0.78, 0, H); tb.addColorStop(0, 'rgba(70,45,25,.9)'); tb.addColorStop(0.08, 'rgba(255,214,160,.35)'); tb.addColorStop(0.14, 'rgba(30,20,12,.95)'); tb.addColorStop(1, 'rgba(12,10,12,1)');
+    g.fillStyle = tb; g.fillRect(0, H * 0.78, W, H * 0.22);
+    for (let k = 0; k < 40; k++) { g.fillStyle = `rgba(255,220,170,${0.15 + rnd() * 0.3})`; g.beginPath(); g.arc(W * rnd(), H * (0.82 + rnd() * 0.15), 2 + rnd() * 4.5, 0, 7); g.fill(); }
+    { const b = document.createElement('canvas'); b.width = W; b.height = H; const bg2 = b.getContext('2d'); bg2.filter = 'blur(9px)'; bg2.drawImage(c, 0, 0); g.clearRect(0, 0, W, H); g.drawImage(b, 0, 0); }
+    // fade the edges into the page background
+    g.globalCompositeOperation = 'destination-in';
+    const m = g.createRadialGradient(W / 2, H * 0.55, H * 0.3, W / 2, H * 0.55, W * 0.56); m.addColorStop(0, 'rgba(0,0,0,1)'); m.addColorStop(0.7, 'rgba(0,0,0,.85)'); m.addColorStop(1, 'rgba(0,0,0,0)');
+    g.fillStyle = m; g.fillRect(0, 0, W, H);
+    const v = g.createLinearGradient(0, 0, 0, H); v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(0.42, 'rgba(0,0,0,1)'); v.addColorStop(0.9, 'rgba(0,0,0,1)'); v.addColorStop(1, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(0,0,0,1)');
+    g.fillStyle = v; g.fillRect(0, 0, W, H);
+    cv.style.backgroundImage = `url(${c.toDataURL('image/png')})`;
+    cv.style.backgroundSize = 'cover'; cv.style.backgroundPosition = 'center';
+  })();
   const scene = new THREE.Scene();
-  scene.fog = new THREE.Fog(0x0b0e1a, 3.2, 6.4);
+  scene.fog = new THREE.Fog(0x1e140d, 3.2, 6.4);
   const pmrem = new THREE.PMREMGenerator(renderer);
   scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
   scene.environmentIntensity = 0.55;
@@ -100,26 +130,79 @@ ready(async () => {
 
   // cake
   const ring = new THREE.Group(); scene.add(ring);
-  const tier1 = new THREE.Mesh(new THREE.CylinderGeometry(R - 0.035, R - 0.035, CH, 128, 1, true), icing); ring.add(tier1);
+  const cake = new THREE.Group(); scene.add(cake);
+  const tier1 = new THREE.Mesh(new THREE.CylinderGeometry(R - 0.035, R - 0.035, CH, 128, 1, true), icing); cake.add(tier1);
   const lid = new THREE.Mesh(new THREE.CylinderGeometry(R + 0.03, R + 0.03, 0.05, 128), icing);
-  lid.position.y = top + 0.025; lid.castShadow = true; lid.receiveShadow = true; ring.add(lid);
-  pearls(R + 0.03, top + 0.05, 0.014, 150, ring);
-  pearls(R + 0.035, top + 0.002, 0.012, 170, ring);
+  lid.position.y = top + 0.025; lid.castShadow = true; lid.receiveShadow = true; cake.add(lid);
+  pearls(R + 0.03, top + 0.05, 0.014, 150, cake);
+  pearls(R + 0.035, top + 0.002, 0.012, 170, cake);
   const base = new THREE.Mesh(new THREE.CylinderGeometry(R + 0.07, R + 0.09, 0.06, 128), icing);
-  base.position.y = -top - 0.03; base.receiveShadow = true; ring.add(base);
-  pearls(R + 0.075, -top + 0.004, 0.013, 170, ring);
+  base.position.y = -top - 0.03; base.receiveShadow = true; cake.add(base);
+  pearls(R + 0.075, -top + 0.004, 0.013, 170, cake);
   // bigger tier under the card tier
   const R0 = R * 1.34, H0 = CH * 0.62;
   const tier0 = new THREE.Mesh(new THREE.CylinderGeometry(R0, R0, H0, 160), icing);
-  tier0.position.y = -top - 0.06 - H0 / 2; tier0.receiveShadow = true; ring.add(tier0);
-  pearls(R0 + 0.004, -top - 0.06 - 0.012, 0.015, 220, ring);
-  pearls(R0 + 0.004, -top - 0.06 - H0 * 0.55, 0.011, 220, ring);
+  tier0.position.y = -top - 0.06 - H0 / 2; tier0.receiveShadow = true; cake.add(tier0);
+  pearls(R0 + 0.004, -top - 0.06 - 0.012, 0.015, 220, cake);
+  pearls(R0 + 0.004, -top - 0.06 - H0 * 0.55, 0.011, 220, cake);
   const R2 = R * 0.6, H2 = CH * 0.42;
   const tier2 = new THREE.Mesh(new THREE.CylinderGeometry(R2, R2, H2, 128), icing);
-  tier2.position.y = top + 0.05 + H2 / 2; tier2.castShadow = true; tier2.receiveShadow = true; ring.add(tier2);
-  pearls(R2 + 0.004, top + 0.05 + 0.012, 0.012, 110, ring);
-  pearls(R2 + 0.004, top + 0.05 + H2 - 0.004, 0.011, 110, ring);
+  tier2.position.y = top + 0.05 + H2 / 2; tier2.castShadow = true; tier2.receiveShadow = true; cake.add(tier2);
+  pearls(R2 + 0.004, top + 0.05 + 0.012, 0.012, 110, cake);
+  pearls(R2 + 0.004, top + 0.05 + H2 - 0.004, 0.011, 110, cake);
   const topY = top + 0.05 + H2;
+
+  // "Viva gli sposi" in script on the top tier, facing the visitor
+  (() => {
+    const W = 4096, Hh = 512, c = document.createElement('canvas'); c.width = W; c.height = Hh; const g = c.getContext('2d');
+    g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = `400 330px Hurricane, "Great Vibes", cursive`;
+    g.fillStyle = 'rgba(120,60,30,.18)'; g.fillText('Viva gli sposi', W / 2 + 4, Hh / 2 + 6);
+    g.fillStyle = '#e25b1e'; g.fillText('Viva gli sposi', W / 2, Hh / 2);
+    const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8;
+    const band = new THREE.Mesh(new THREE.CylinderGeometry(R2 + 0.004, R2 + 0.004, H2 * 0.62, 128, 1, true),
+      new THREE.MeshStandardMaterial({ map: t, transparent: true, depthWrite: false, roughness: 0.5 }));
+    band.position.y = top + 0.05 + H2 * 0.47; band.rotation.y = Math.PI; band.renderOrder = 3; cake.add(band);
+  })();
+
+  // sugar roses and leaves
+  const petalMat = new THREE.MeshPhysicalMaterial({ color: 0xffffff, vertexColors: true, roughness: 0.55, sheen: 1, sheenColor: new THREE.Color(0xfff3ee), sheenRoughness: 0.4, side: THREE.DoubleSide });
+  const leafMat = new THREE.MeshStandardMaterial({ color: 0x4d6a3c, roughness: 0.6, side: THREE.DoubleSide });
+  function roseGeo() {
+    const parts = []; const n = 18;
+    for (let k = 0; k < n; k++) {
+      const f = k / (n - 1), r = 0.008 + 0.03 * Math.pow(f, 0.7);
+      // one petal: a narrow curved cup, opening outward more for the outer rows
+      const g = new THREE.SphereGeometry(r, 12, 8, -0.45 - 0.25 * f, 0.9 + 0.5 * f, 0.55 - 0.2 * f, 1.0);
+      g.translate(0, -r * 0.35, 0);
+      g.rotateX(-0.15 - 0.95 * f * f);
+      g.translate(0, 0, r * 0.35 * f);
+      g.rotateY(k * 2.399);
+      const col = new THREE.Color().setHSL(0.985, 0.5 + 0.25 * (1 - f), 0.78 - 0.14 * (1 - f));
+      const ca = new Float32Array(g.attributes.position.count * 3); for (let v = 0; v < ca.length; v += 3) { ca[v] = col.r; ca[v + 1] = col.g; ca[v + 2] = col.b; }
+      g.setAttribute('color', new THREE.BufferAttribute(ca, 3)); g.deleteAttribute('uv'); parts.push(g);
+    }
+    return mergeGeometries(parts);
+  }
+  function leafGeo() {
+    const g = new THREE.PlaneGeometry(0.03, 0.075, 4, 8); const pos = g.attributes.position;
+    for (let v = 0; v < pos.count; v++) { const x = pos.getX(v), y = pos.getY(v); const w = Math.cos((y / 0.075) * Math.PI) * 0.5 + 0.5; pos.setX(v, x * (0.25 + w)); pos.setZ(v, -Math.abs(x) * 0.6 + y * y * 2.2); }
+    g.translate(0, 0.0375, 0); g.computeVertexNormals(); return g;
+  }
+  const RG = roseGeo(), LG = leafGeo();
+  const spots = [];
+  // cascade from the top tier edge over the card tier lid
+  for (let k = 0; k < 11; k++) { const s = k / 10; const a = 0.75 - s * 0.85; const onTop = s < 0.45; const rr = onTop ? R2 + 0.02 : R + 0.02; const y = onTop ? topY - s * H2 * 1.9 : top + 0.06; spots.push([Math.sin(a) * rr, y, Math.cos(a) * rr, 0.75 + 0.5 * Math.sin(k * 1.7) ** 2]); }
+  // cluster on the bottom tier
+  for (let k = 0; k < 9; k++) { const a = -0.55 + k * 0.13; const rr = R0 - 0.06 - (k % 2) * 0.05; spots.push([Math.sin(a) * rr, -top - 0.04, Math.cos(a) * rr, 0.7 + 0.45 * ((k * 7) % 5) / 5]); }
+  // a few behind the couple
+  for (let k = 0; k < 5; k++) { const a = Math.PI * 0.75 + k * 0.32; spots.push([Math.sin(a) * R2 * 0.55, topY + 0.01, Math.cos(a) * R2 * 0.55, 0.55 + 0.1 * k % 0.3]); }
+  const roses = new THREE.InstancedMesh(RG, petalMat, spots.length), leaves = new THREE.InstancedMesh(LG, leafMat, spots.length * 3);
+  const o = new THREE.Object3D(); let li = 0;
+  spots.forEach(([x, y, z, sc], i) => {
+    o.position.set(x, y, z); o.rotation.set((Math.sin(i) * 0.3), i * 1.3, Math.cos(i * 2) * 0.3); o.scale.setScalar(sc * 2.5); o.updateMatrix(); roses.setMatrixAt(i, o.matrix);
+    for (let k = 0; k < 3; k++) { o.rotation.set(1.1 + Math.sin(i + k) * 0.3, i * 1.3 + k * 2.1, 0); o.scale.setScalar(sc * 1.8); o.position.set(x, y - 0.015, z); o.updateMatrix(); leaves.setMatrixAt(li++, o.matrix); }
+  });
+   cake.add(roses, leaves);
 
   // card textures
   function wrap(g, text, x, y, maxW, lh) {
@@ -268,6 +351,7 @@ ready(async () => {
   stage.appendChild(cv);
 
   const shade = stage.querySelector('.cpw-shade');
+  if (shade) shade.style.top = (1 - EXT) * 100 + '%';
   const anim = shade && shade.getAnimations ? shade.getAnimations()[0] : null;
   const t0 = performance.now();
   const now = () => { const ms = anim && anim.currentTime != null ? Number(anim.currentTime) : performance.now() - t0; return ((ms / 1000) % LOOP + LOOP) % LOOP; };
