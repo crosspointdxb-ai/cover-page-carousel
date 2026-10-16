@@ -127,6 +127,75 @@ ready(async () => {
     for (let k = 0; k < count; k++) { const a = k / count * Math.PI * 2; o.position.set(Math.sin(a) * radius, y, Math.cos(a) * radius); o.updateMatrix(); m.setMatrixAt(k, o.matrix); }
     m.castShadow = true; parent.add(m); return m;
   }
+  // piped chantilly: a star tip swirl with twisted ridges, used for rosettes and shell borders
+  const cream = new THREE.MeshPhysicalMaterial({ color: 0xfffaf3, roughness: 0.78, sheen: 0.7, sheenColor: new THREE.Color(0xffffff), sheenRoughness: 0.6 });
+  const swirlGeo = (() => {
+    const pts = []; for (let k = 0; k <= 16; k++) { const f = k / 16; pts.push(new THREE.Vector2(Math.max(0.0001, (1 - f) ** 0.8 * (1 + 0.12 * Math.sin(f * Math.PI * 3))), f * 1.15)); }
+    const g = new THREE.LatheGeometry(pts, 48), p = g.attributes.position;
+    for (let v = 0; v < p.count; v++) {
+      const x = p.getX(v), y = p.getY(v), z = p.getZ(v), ph = Math.atan2(z, x);
+      const k = 1 + 0.16 * Math.cos(8 * (ph + y * 2.6)); p.setXYZ(v, x * k, y, z * k);
+    }
+    g.computeVertexNormals(); return g;
+  })();
+  function piping(radius, y, size, count, parent, sy = 1, skip) {
+    const m = new THREE.InstancedMesh(swirlGeo, cream, count), o = new THREE.Object3D(); let n = 0;
+    for (let k = 0; k < count; k++) {
+      const a = k / count * Math.PI * 2; if (skip && skip(a)) continue;
+      o.position.set(Math.sin(a) * radius, y, Math.cos(a) * radius); o.rotation.set(0, a * 3.7, 0); o.scale.set(size, size * sy, size); o.updateMatrix(); m.setMatrixAt(n++, o.matrix);
+    }
+    m.count = n; m.castShadow = true; m.receiveShadow = true; parent.add(m); return m;
+  }
+  // Lambeth style shell piping in blush chantilly: ridged teardrops chained into borders, swags and columns
+  const blush = new THREE.MeshPhysicalMaterial({ color: 0xf3bcaa, roughness: 0.7, sheen: 0.8, sheenColor: new THREE.Color(0xfff0ea), sheenRoughness: 0.5 });
+  const shellGeo = (() => {
+    const g = new THREE.PlaneGeometry(1, 1, 28, 32), p = g.attributes.position, uv = g.attributes.uv;
+    for (let v = 0; v < p.count; v++) {
+      const u = uv.getX(v), th = uv.getY(v) * Math.PI * 2;
+      const head = u < 0.32 ? Math.sin((u / 0.32) * Math.PI / 2) : Math.pow(1 - (u - 0.32) / 0.68, 1.3);
+      const r = 0.34 * head * (1 + (0.2 * (1 - u)) * Math.cos(9 * th)), sy = Math.sin(th), sz = Math.cos(th);
+      p.setXYZ(v, u - 0.32, r * (sy < 0 ? sy * 0.25 : sy), r * sz);
+    }
+    g.computeVertexNormals(); return g;
+  })();
+  const _m = new THREE.Matrix4(), _x = new THREE.Vector3(), _y = new THREE.Vector3(), _z = new THREE.Vector3(), _s = new THREE.Vector3(), _q = new THREE.Quaternion();
+  // items: [px,py,pz, dx,dy,dz (direction of the chain), nx,ny,nz (side the ridges face), size]
+  function shells(items, parent) {
+    const m = new THREE.InstancedMesh(shellGeo, blush, items.length);
+    items.forEach((it, i) => {
+      _x.set(it[3], it[4], it[5]).normalize(); _y.set(it[6], it[7], it[8]); _y.addScaledVector(_x, -_y.dot(_x)).normalize(); _z.crossVectors(_x, _y);
+      _m.makeBasis(_x, _y, _z); _q.setFromRotationMatrix(_m); _s.setScalar(it[9]); _m.compose(_x.set(it[0], it[1], it[2]), _q, _s); m.setMatrixAt(i, _m);
+    });
+    m.castShadow = true; m.receiveShadow = true; parent.add(m); return m;
+  }
+  // a ring border; up = how much the ridges face up (1) or outward (0)
+  function border(radius, y, size, parent, up = 1) {
+    const n = Math.round(2 * Math.PI * radius / (size * 0.62)), it = [];
+    for (let k = 0; k < n; k++) { const a = k / n * Math.PI * 2, sa = Math.sin(a), ca = Math.cos(a); it.push([sa * radius, y, ca * radius, ca, 0, -sa, sa * (1 - up), up, ca * (1 - up), size]); }
+    return shells(it, parent);
+  }
+  // choux puffs glazed in caramel, stacked into small croquembouche towers
+  const chouxMat = new THREE.MeshPhysicalMaterial({ color: 0xb87838, roughness: 0.5, clearcoat: 0.9, clearcoatRoughness: 0.25 });
+  const chouxGeo = (() => {
+    const g = new THREE.SphereGeometry(1, 18, 12), p = g.attributes.position;
+    for (let v = 0; v < p.count; v++) { const x = p.getX(v), y = p.getY(v), z = p.getZ(v); const n = 1 + 0.06 * Math.sin(x * 9 + z * 7) * Math.cos(y * 8 + x * 5); p.setXYZ(v, x * n, y * n * 0.82, z * n); }
+    g.computeVertexNormals(); return g;
+  })();
+  function croquembouche(x, y, z, baseR, h, parent) {
+    const pr = baseR * 0.26, levels = Math.round(h / (pr * 1.45)), list = [];
+    for (let l = 0; l < levels; l++) {
+      const f = l / levels, rr = Math.max(0, (baseR - pr) * (1 - f)), cnt = Math.max(1, Math.round(2 * Math.PI * rr / (pr * 1.9)));
+      for (let k = 0; k < cnt; k++) { const a = k / cnt * Math.PI * 2 + l * 0.6; list.push([x + Math.sin(a) * rr, y + pr * 0.8 + l * pr * 1.45, z + Math.cos(a) * rr, pr * (1 - 0.25 * f)]); }
+    }
+    const m = new THREE.InstancedMesh(chouxGeo, chouxMat, list.length), o = new THREE.Object3D();
+    list.forEach(([a, b, c, s], i) => { o.position.set(a, b, c); o.rotation.set(i, i * 2.3, 0); o.scale.setScalar(s); o.updateMatrix(); m.setMatrixAt(i, o.matrix); });
+    m.castShadow = true; parent.add(m);
+    // a chantilly crown and a few sugar pearls on the tower
+    const top = new THREE.Mesh(swirlGeo, cream); top.scale.setScalar(pr * 1.1); top.position.set(x, y + pr * 0.8 + levels * pr * 1.45 - pr * 0.3, z); parent.add(top);
+    const dm = new THREE.InstancedMesh(new THREE.SphereGeometry(pr * 0.22, 10, 8), pearlMat, 14);
+    for (let k = 0; k < 14; k++) { const l = (k * 5) % levels, f = l / levels, rr = (baseR - pr) * (1 - f) + pr * 0.85, a = k * 2.1; o.position.set(x + Math.sin(a) * rr, y + pr * 1.2 + l * pr * 1.45, z + Math.cos(a) * rr); o.scale.setScalar(1); o.rotation.set(0, 0, 0); o.updateMatrix(); dm.setMatrixAt(k, o.matrix); }
+    parent.add(dm);
+  }
 
   // cake
   const ring = new THREE.Group(); scene.add(ring);
@@ -134,21 +203,25 @@ ready(async () => {
   const tier1 = new THREE.Mesh(new THREE.CylinderGeometry(R - 0.035, R - 0.035, CH, 128, 1, true), icing); cake.add(tier1);
   const lid = new THREE.Mesh(new THREE.CylinderGeometry(R + 0.03, R + 0.03, 0.05, 128), icing);
   lid.position.y = top + 0.025; lid.castShadow = true; lid.receiveShadow = true; cake.add(lid);
-  pearls(R + 0.03, top + 0.05, 0.014, 150, cake);
+  border(R + 0.02, top + 0.056, 0.12, cake, 0.4);
   pearls(R + 0.035, top + 0.002, 0.012, 170, cake);
   const base = new THREE.Mesh(new THREE.CylinderGeometry(R + 0.07, R + 0.09, 0.06, 128), icing);
   base.position.y = -top - 0.03; base.receiveShadow = true; cake.add(base);
-  pearls(R + 0.075, -top + 0.004, 0.013, 170, cake);
+  border(R + 0.07, -top + 0.006, 0.13, cake, 0.75);
   // bigger tier under the card tier
   const R0 = R * 1.34, H0 = CH * 0.74;
   const tier0 = new THREE.Mesh(new THREE.CylinderGeometry(R0, R0, H0, 160), icing);
   tier0.position.y = -top - 0.06 - H0 / 2; tier0.receiveShadow = true; cake.add(tier0);
-  pearls(R0 + 0.004, -top - 0.06 - 0.012, 0.015, 220, cake);
-  pearls(R0 + 0.004, -top - 0.06 - H0 + 0.01, 0.013, 220, cake);
+  // chantilly crown on the bottom tier edge (left open where the front roses sit), shell border at its foot
+  border(R0 - 0.01, -top - 0.06 + 0.008, 0.14, cake, 0.55);
+  pearls(R0 + 0.004, -top - 0.06 - 0.012, 0.012, 220, cake);
+  border(R0 + 0.03, -top - 0.06 - H0 + 0.012, 0.15, cake, 0.7);
+  // three small croquembouche towers on the bottom tier ledge, the piece montee in the piece montee
+  for (const a of [Math.PI * 0.62, Math.PI, Math.PI * 1.38]) croquembouche(Math.sin(a) * 1.19, -top - 0.06, Math.cos(a) * 1.19, 0.085, 0.3, cake);
   // the couple's own wedding photos printed around the bottom tier, framed like sugar plaques
   const wedBand = new THREE.Group(); scene.add(wedBand);
   (() => {
-    const PH = H0 * 0.86, PW = PH * 0.75, n = 18, yC = -top - 0.06 - H0 * 0.5, rr = R0 + 0.004;
+    const PH = H0 * 0.6, PW = PH * 0.75, n = 18, yC = -top - 0.06 - H0 * 0.6, rr = R0 + 0.004;
     const frameMat = new THREE.MeshPhysicalMaterial({ color: 0xfffdf9, roughness: 0.4, sheen: 1, sheenColor: new THREE.Color(0xffffff) });
     for (let i = 0; i < n; i++) {
       const a = i / n * Math.PI * 2, dt = PW / rr;
@@ -161,26 +234,40 @@ ready(async () => {
         const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; mat.map = t; mat.needsUpdate = true;
       }, undefined, () => {});
       // a small sugar rosette between photos
-      const ro = new THREE.Mesh(new THREE.SphereGeometry(0.014, 12, 8), pearlMat); const b = a + Math.PI / n; ro.position.set(Math.sin(b) * (rr + 0.01), yC, Math.cos(b) * (rr + 0.01)); wedBand.add(ro);
     }
+    // vertical shell columns between the photos and draped swags above them, like a vintage Lambeth cake
+    const it = [], yT = -top - 0.075, yB = -top - 0.06 - H0 + 0.05, sz = 0.075;
+    for (let i = 0; i < n; i++) {
+      const b = (i + 0.5) / n * Math.PI * 2, sb = Math.sin(b), cb = Math.cos(b), r = rr + 0.012;
+      for (let y = yT; y > yB; y -= sz * 0.6) it.push([sb * r, y, cb * r, 0, -1, 0, sb, 0, cb, sz]);
+      const b2 = b + Math.PI * 2 / n, steps = 11;
+      for (let k = 0; k < steps; k++) {
+        const f = (k + 0.5) / steps, a = b + (b2 - b) * f, dip = H0 * 0.17 * Math.sin(Math.PI * f), y = yT - 0.01 - dip;
+        const slope = -H0 * 0.17 * Math.PI * Math.cos(Math.PI * f) / ((b2 - b) * r);
+        it.push([Math.sin(a) * r, y, Math.cos(a) * r, Math.cos(a), slope, -Math.sin(a), Math.sin(a), 0, Math.cos(a), sz * 0.8]);
+      }
+    }
+    shells(it, wedBand);
   })();
   const R2 = R * 0.6, H2 = CH * 0.42;
   const tier2 = new THREE.Mesh(new THREE.CylinderGeometry(R2, R2, H2, 128), icing);
   tier2.position.y = top + 0.05 + H2 / 2; tier2.castShadow = true; tier2.receiveShadow = true; cake.add(tier2);
-  pearls(R2 + 0.004, top + 0.05 + 0.012, 0.012, 110, cake);
-  pearls(R2 + 0.004, top + 0.05 + H2 - 0.004, 0.011, 110, cake);
+  border(R2 + 0.03, top + 0.05 + 0.008, 0.1, cake, 0.7);
+  border(R2 - 0.01, top + 0.05 + H2 + 0.006, 0.1, cake, 0.45);
   const topY = top + 0.05 + H2;
 
   // "Viva gli sposi" in script on the top tier, facing the visitor
   (() => {
     const W = 4096, Hh = 512, c = document.createElement('canvas'); c.width = W; c.height = Hh; const g = c.getContext('2d');
-    g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = `400 330px Hurricane, "Great Vibes", cursive`;
+    // the script stays facing the visitor while the cake turns behind it; no rose ever sits on the band
+    g.textAlign = 'center'; g.textBaseline = 'middle'; let fs = 330;
+    do { g.font = `400 ${fs}px Hurricane, "Great Vibes", cursive`; fs -= 10; } while (g.measureText('Viva gli sposi').width > W * 0.36 && fs > 120);
     g.fillStyle = 'rgba(120,60,30,.18)'; g.fillText('Viva gli sposi', W / 2 + 4, Hh / 2 + 6);
     g.fillStyle = '#e25b1e'; g.fillText('Viva gli sposi', W / 2, Hh / 2);
     const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8;
-    const band = new THREE.Mesh(new THREE.CylinderGeometry(R2 + 0.004, R2 + 0.004, H2 * 0.62, 128, 1, true),
+    const band = new THREE.Mesh(new THREE.CylinderGeometry(R2 + 0.006, R2 + 0.006, H2 * 0.56, 128, 1, true),
       new THREE.MeshStandardMaterial({ map: t, transparent: true, depthWrite: false, roughness: 0.5 }));
-    band.position.y = top + 0.05 + H2 * 0.47; band.rotation.y = Math.PI; band.renderOrder = 3; cake.add(band);
+    band.position.y = top + 0.05 + H2 * 0.42; band.rotation.y = Math.PI; band.renderOrder = 3; scene.add(band);
   })();
 
   // sugar roses and leaves
@@ -193,10 +280,10 @@ ready(async () => {
       // one petal: a narrow curved cup, opening outward more for the outer rows
       const g = new THREE.SphereGeometry(r, 12, 8, -0.45 - 0.25 * f, 0.9 + 0.5 * f, 0.55 - 0.2 * f, 1.0);
       g.translate(0, -r * 0.35, 0);
-      g.rotateX(-0.15 - 0.95 * f * f);
+      g.rotateX(-0.12 - 0.7 * f * f);
       g.translate(0, 0, r * 0.35 * f);
       g.rotateY(k * 2.399);
-      const col = new THREE.Color().setHSL(0.985, 0.5 + 0.25 * (1 - f), 0.78 - 0.14 * (1 - f));
+      const col = new THREE.Color().setHSL(0.975, 0.55 + 0.2 * (1 - f), 0.8 - 0.2 * (1 - f));
       const ca = new Float32Array(g.attributes.position.count * 3); for (let v = 0; v < ca.length; v += 3) { ca[v] = col.r; ca[v + 1] = col.g; ca[v + 2] = col.b; }
       g.setAttribute('color', new THREE.BufferAttribute(ca, 3)); g.deleteAttribute('uv'); parts.push(g);
     }
@@ -210,7 +297,8 @@ ready(async () => {
   const RG = roseGeo(), LG = leafGeo();
   const spots = [];
   // cascade from the top tier edge over the card tier lid
-  for (let k = 0; k < 11; k++) { const s = k / 10; const a = 0.75 - s * 0.85; const onTop = s < 0.45; const rr = onTop ? R2 + 0.02 : R + 0.02; const y = onTop ? topY - s * H2 * 1.9 : top + 0.06; spots.push([Math.sin(a) * rr, y, Math.cos(a) * rr, 0.75 + 0.5 * Math.sin(k * 1.7) ** 2]); }
+  // two cascades on the sides: a crown on the top tier rim, then down onto the card tier lid (never over the script band)
+  for (const side of [Math.PI / 2, -Math.PI / 2]) for (let k = 0; k < 11; k++) { const s = k / 10; const a = side + 0.3 - s * 0.6; const onTop = s < 0.4; const rr = onTop ? R2 - 0.07 : R + 0.02; const y = onTop ? topY + 0.01 : top + 0.06; spots.push([Math.sin(a) * rr, y, Math.cos(a) * rr, (onTop ? 0.55 : 0.75) + 0.4 * Math.sin(k * 1.7) ** 2]); }
   // cluster on the bottom tier
   for (let k = 0; k < 9; k++) { const a = -0.55 + k * 0.13; const rr = R0 - 0.06 - (k % 2) * 0.05; spots.push([Math.sin(a) * rr, -top - 0.04, Math.cos(a) * rr, 0.7 + 0.45 * ((k * 7) % 5) / 5]); }
   // a few behind the couple
@@ -218,7 +306,7 @@ ready(async () => {
   const roses = new THREE.InstancedMesh(RG, petalMat, spots.length), leaves = new THREE.InstancedMesh(LG, leafMat, spots.length * 3);
   const o = new THREE.Object3D(); let li = 0;
   spots.forEach(([x, y, z, sc], i) => {
-    o.position.set(x, y, z); o.rotation.set((Math.sin(i) * 0.3), i * 1.3, Math.cos(i * 2) * 0.3); o.scale.setScalar(sc * 2.5); o.updateMatrix(); roses.setMatrixAt(i, o.matrix);
+    o.position.set(x, y, z); o.rotation.set((Math.sin(i) * 0.3), i * 1.3, Math.cos(i * 2) * 0.3); o.scale.setScalar(sc * 2.1); o.updateMatrix(); roses.setMatrixAt(i, o.matrix);
     for (let k = 0; k < 3; k++) { o.rotation.set(1.1 + Math.sin(i + k) * 0.3, i * 1.3 + k * 2.1, 0); o.scale.setScalar(sc * 1.8); o.position.set(x, y - 0.015, z); o.updateMatrix(); leaves.setMatrixAt(li++, o.matrix); }
   });
    cake.add(roses, leaves);
