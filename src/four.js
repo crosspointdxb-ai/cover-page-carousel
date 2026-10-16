@@ -325,19 +325,28 @@
     var box = el('div', 'cpx-agent cpx-idle'); box.appendChild(el('p', 'cpx-k', IT ? 'Oppure chiedi a Cover Agent, la nostra AI' : 'Or ask Cover Agent, our AI'));
     var host = el('div', 'cpx-ah', '<p class="cpx-ld">' + (IT ? 'Carico il nostro archivio' : 'Loading our archive') + '\u2026</p>'); box.appendChild(host); app.appendChild(box);
     var done = false;
+    function wire() {
+      var wake = function () { box.classList.remove('cpx-idle'); };
+      var i = host.querySelector('#cpa-as input'); if (i) i.addEventListener('input', function () { if (i.value.length > 1) wake(); });
+      if (i) i.addEventListener('keydown', function (e) { if (e.key === 'Enter') wake(); });
+      host.addEventListener('click', function (e) { if (e.target.closest('#cpa-as button, #cpa-as .op, #cpa-as .chips *')) wake(); });
+    }
+    // if the older page script already built the bar, adopt it here instead of loading a second copy
+    function adopt(tries) {
+      var old = document.querySelector('#cpw-ent'), as = old && old.querySelector('#cpa-as');
+      if (as) { host.innerHTML = ''; while (old.firstChild) host.appendChild(old.firstChild); wire(); return true; }
+      if (tries > 0) setTimeout(function () { adopt(tries - 1); }, 300); return false;
+    }
     function load() {
       if (done) return; done = true;
+      if (document.querySelector('#cpw-ent') || window.__cpaActSearch) { adopt(100); return; }
       fetch((IT ? '/it' : '') + '/entertainment').then(function (r) { return r.text(); }).then(function (html) {
         var L = new DOMParser().parseFromString(html, 'text/html').querySelector('.entertainment-list'); if (!L) throw 0;
         host.innerHTML = ''; host.appendChild(document.importNode(L.closest('.w-dyn-list') || L, true));
-        if (window.__cpaActSearch) return;
+        if (window.__cpaActSearch) { adopt(100); return; }
         var s = document.createElement('script'); s.defer = true;
         s.src = 'https://cover-agent-ai.coverpageagency.workers.dev/' + (/\.webflow\.io$/.test(location.hostname) ? 'next/' : '') + 'act-search.js';
-        s.onload = function () {
-          var wake = function () { box.classList.remove('cpx-idle'); };
-          var i = host.querySelector('#cpa-as input'); if (i) i.addEventListener('keydown', function (e) { if (e.key === 'Enter' || i.value.length > 1) wake(); });
-          host.addEventListener('click', function (e) { if (e.target.closest('#cpa-as button, #cpa-as .op, #cpa-as .chips *')) wake(); });
-        };
+        s.onload = wire;
         document.body.appendChild(s);
       }).catch(function () { host.innerHTML = '<a class="cpx-more" href="' + (IT ? '/it' : '') + '/entertainment">' + (IT ? 'Apri il nostro archivio' : 'Open our archive') + '</a>'; });
     }
