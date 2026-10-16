@@ -434,8 +434,8 @@ ready(async () => {
     const needW = (R0 + 0.06) * 2, needH = (yMax - yMin) * 1.04;
     const d = Math.max((needW / 2) / Math.tan(hf / 2), (needH / 2) / Math.tan(vf / 2)) + R * 1.1;
     camBase.d = d; camera.zoom = 1.62; camera.position.copy(target).addScaledVector(dir, d); camera.lookAt(target);
-    // desktop: the cake sits 20% to the right, clear of the title, so the cards read better
-    if (w >= 992) camera.setViewOffset(w, h, -0.2 * w, 0, w, h); else camera.clearViewOffset();
+    // desktop: the cake sits 20% to the right and 20% higher, clear of the title, so the cards read better
+    if (w >= 992) camera.setViewOffset(w, h, -0.2 * w, 0.2 * h, w, h); else camera.clearViewOffset();
     camera.updateProjectionMatrix();
     scene.fog.near = d - R * 0.2; scene.fog.far = d + R * 2.6;
   }
@@ -453,14 +453,6 @@ ready(async () => {
     let f = 0; setInterval(() => { f = (f + 1) % 4; gr.style.backgroundPosition = `${f * 37}px ${f * 59}px`; }, 90);
   })();
 
-  // faded black edges on the whole hero
-  (() => {
-    const hero = stage.closest('.cpw-hero') || stage.parentElement; if (!hero || hero.querySelector('.cpw-vig')) return;
-    const v = document.createElement('div'); v.className = 'cpw-vig'; v.setAttribute('aria-hidden', 'true');
-    Object.assign(v.style, { position: 'absolute', inset: '0', zIndex: '3', pointerEvents: 'none',
-      background: 'linear-gradient(90deg,#0b0e1a 0%,rgba(11,14,26,0) 14%,rgba(11,14,26,0) 86%,#0b0e1a 100%),linear-gradient(180deg,#0b0e1a 0%,rgba(11,14,26,0) 12%,rgba(11,14,26,0) 82%,#0b0e1a 100%)' });
-    hero.appendChild(v);
-  })();
   const shade = stage.querySelector('.cpw-shade');
   if (shade) shade.style.top = (1 - EXT) * 100 + '%';
   // soft top and bottom edges on everything that extends past the stage, so no hard band shows on any screen
