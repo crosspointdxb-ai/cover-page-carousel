@@ -108,8 +108,8 @@
 .cpx-fr.on .cpx-cap{opacity:1;transform:none}
 .cpx-fr img{transition-delay:inherit}
 .cpx-agent{margin-top:34px;padding-top:26px;border-top:1px solid var(--line)}
-.cpx-agent.cpx-idle .w-dyn-list{display:none}
-.cpx-agent .w-dyn-list{max-height:560px;overflow:auto}
+.cpx-agent.cpx-idle .entertainment-list,.cpx-agent.cpx-idle .w-dyn-empty{display:none}
+.cpx-agent .entertainment-list{max-height:620px;overflow:auto}
 .cpx-ld{font-size:14px;color:var(--mut);margin:0}
 @media (max-width:900px){.cpx-row3{grid-template-columns:1fr}}
 @media (max-width:1100px){.cpx-m{grid-template-columns:1fr}}
