@@ -25,7 +25,7 @@ const ANG = new Float32Array(N + 1);
     if (t > 11 - b && t < 11 + b) { const a = speed(11 - b), c = speed(11 + b), k = (t - (11 - b)) / (2 * b); return a + (c - a) * k * k * (3 - 2 * k); }
     return speed(t);
   };
-  for (let i = 1; i <= N; i++) ANG[i] = ANG[i - 1] + 0.336 * (vs((i - 1) * DT) + vs(i * DT)) / 2 * DT;
+  for (let i = 1; i <= N; i++) ANG[i] = ANG[i - 1] + 0.252 * (vs((i - 1) * DT) + vs(i * DT)) / 2 * DT;
   const k = (Math.round(ANG[N] / 360) * 360) / ANG[N];
   for (let i = 0; i <= N; i++) ANG[i] *= k;
 })();
