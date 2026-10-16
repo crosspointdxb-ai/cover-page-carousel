@@ -470,6 +470,9 @@ ready(async () => {
 
   const shade = stage.querySelector('.cpw-shade');
   if (shade) shade.style.top = (1 - EXT) * 100 + '%';
+  // soft top and bottom edges on everything that extends past the stage, so no hard band shows on any screen
+  const FADE = 'linear-gradient(to bottom, transparent 0%, #000 30%, #000 90%, transparent 100%)';
+  for (const el of [cv, stage.lastElementChild, shade]) if (el) { el.style.webkitMaskImage = FADE; el.style.maskImage = FADE; }
   const anim = shade && shade.getAnimations ? shade.getAnimations()[0] : null;
   const t0 = performance.now();
   const now = () => { const ms = anim && anim.currentTime != null ? Number(anim.currentTime) : performance.now() - t0; return ((ms / 1000) % LOOP + LOOP) % LOOP; };
