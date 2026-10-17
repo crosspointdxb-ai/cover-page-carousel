@@ -178,6 +178,68 @@
 @media (max-width:600px){.cpx-btn{width:100%;padding:13px 14px!important;font-size:10.5px!important}}
 @media (max-width:1100px){.cpx-m{grid-template-columns:1fr}}
 @media (max-width:900px){.cpx-n{grid-template-columns:1fr;gap:26px;padding-left:46px}.cpx-n::before{left:15px;right:auto;top:0;bottom:0;width:1px;height:auto}.cpx-nl{left:15px;top:0;width:1px!important;height:var(--w,0%);transition:height 500ms cubic-bezier(.23,1,.32,1)}.cpx-dot{position:absolute;left:-46px;top:-4px}.cpx-t{margin-top:0}.cpx-mo .cpx-chips{flex-direction:row;flex-wrap:wrap}.cpx-sheet{grid-template-columns:repeat(4,minmax(0,1fr))}}
+/* 1.6: numbered cards, Cover Agent as the star, one card per phone screen */
+#budget-four{counter-reset:cpbn}
+#budget-four .cpb-t{counter-increment:cpbn}
+#budget-four .cpb-t::before{content:"0" counter(cpbn);display:block;font:500 11px/1 Inter,sans-serif;letter-spacing:.22em;color:rgba(20,19,17,.5);margin:0 0 8px}
+.cpx-agent{margin-top:clamp(22px,2vw,34px);padding:clamp(18px,1.8vw,30px);border:1px solid rgba(20,19,17,.22);border-radius:6px;border-top-width:1px}
+.cpx-at{margin:0 0 6px;line-height:1}
+.cpx-at1{font-family:"Classy Vogue",Georgia,serif;font-size:clamp(26px,2.2vw,40px);letter-spacing:.04em}
+.cpx-at2{font-family:Hurricane,cursive;font-size:clamp(30px,2.6vw,46px);color:var(--acc)}
+.cpx-as{font-size:clamp(13px,.95vw,16px);line-height:1.5;color:var(--mut);margin:0 0 14px;max-width:56ch}
+.cpx-nk{margin-top:clamp(22px,2vw,34px)}
+@media (max-width:767px){
+#budget-four .cpb-img-1{height:112px!important;min-height:0!important;object-fit:cover}
+#budget-four .cpb-body-1{padding:16px!important}
+#budget-four .cpb-t::before{margin-bottom:6px}
+.cpx{margin-top:10px}
+.cpx-app{margin-top:14px}
+.cpx-lead,.cpb-cardloc .cpx-lead{font-size:13.6px;line-height:1.5}
+.cpx-fact{font-size:12px;line-height:1.5;margin:8px 0 0}
+.cpx-quote{padding:9px 14px;font-size:11px;margin-top:10px}
+/* location: villa finder compact */
+.cpw-tool .cpw-modes{margin-bottom:8px}.cpw-tool .cpw-modes button{padding:7px 10px!important;font-size:13px!important}
+.cpw-tool .cpw-cnt{margin:2px 0 6px}.cpw-tool .cpw-cnt b{font-size:22px!important}
+.cpw-tool .cpw-pill{padding:4px!important}
+.cpw-tool .cpw-pill button,.cpw-tool .cpw-go{background:transparent!important;color:#141311!important;box-shadow:inset 0 0 0 1px #141311!important;padding:9px 14px!important;font-size:10.5px!important}
+.cpw-tool .cpw-flt{margin-top:8px}.cpw-tool .cpw-lakes,.cpw-tool .cpw-rg{margin-bottom:4px!important}
+.cpw-tool .cpw-chip{padding:5px 10px!important;font-size:12px!important}
+.cpw-tool .cpw-mapw p{font-size:12px!important;margin:0 0 6px!important}
+.cpw-tool .cpw-map svg{max-height:170px;width:100%}
+/* catering: wizard and menu card in one screen */
+.cpx-wz{min-height:0}
+.cpx-dots{margin-bottom:12px}.cpx-qn{margin-bottom:6px}
+.cpx-qt{font-size:22px;margin:0 0 10px}
+.cpx-big{font-size:16px;padding:8px 0}
+.cpx-nav{padding-top:10px}
+.cpx-m{gap:14px}
+.cpx-paper{min-height:0;padding:20px 16px}
+.cpx-paper::before{inset:8px}.cpx-paper::after{inset:11px}
+.cpx-ttl3{margin:0 0 8px}.cpx-s1{font-size:24px}.cpx-s2{font-size:19px}
+.cpx-pg{margin:0 0 8px}.cpx-co{margin:0 0 6px}.cpx-dish .cpx-hw,.cpx-live{font-size:13px;line-height:1.7}
+.cpx-empty{margin-top:8px;font-size:12.5px}
+/* photo and video: centred budget, smaller frames */
+.cpx-bf{text-align:center}.cpx-bf .cpx-k{text-align:center}
+.cpx-bfr{margin:0 auto;justify-content:center}.cpx-bfr .cpx-bud{text-align:center;font-size:22px}
+.cpx-res{text-align:center}.cpx-pk{justify-items:center;text-align:center;grid-template-columns:1fr}
+.cpx-pkn{font-size:22px}.cpx-pkd{font-size:12.8px;margin:0 auto}
+.cpx-res .cpx-sheet{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:14px}
+.cpx-res .cpx-cap{font-size:9px;padding:16px 4px 4px}
+.cpx-send{justify-content:center;margin-top:14px;gap:10px}
+/* entertainment: the six moments in one swipeable line */
+.cpx-n{display:flex!important;grid-template-columns:none!important;gap:10px!important;padding:0 0 6px!important;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.cpx-n::-webkit-scrollbar{display:none}
+.cpx-n::before{left:0!important;right:0!important;top:15px!important;bottom:auto!important;width:auto!important;height:1px!important}
+.cpx-nl{left:0!important;top:15px!important;height:1px!important;width:var(--w,0%)!important}
+.cpx-mo{flex:0 0 58%;scroll-snap-align:start;padding:0 6px 0 0!important}
+.cpx-mo .cpx-dot{position:relative!important;left:auto!important;top:auto!important}
+.cpx-mn{font-size:18px;margin:10px 0 8px}
+.cpx-mo .cpx-chip{font-size:12px;padding:6px 10px}
+.cpx-pick{font-size:20px;min-height:20px;margin-top:6px}
+.cpx-agent{padding:16px}
+.cpx-at1{font-size:24px}.cpx-at2{font-size:30px}
+.cpx-as{font-size:12.5px}
+}
 @media (prefers-reduced-motion:reduce){.cpx *,.cpx *::before,.cpx *::after{animation:none!important;transition:none!important}}
 `;
   var st = el('style'); st.id = 'cpx-css'; st.textContent = css; document.head.appendChild(st);
@@ -358,6 +420,8 @@
   };
   function night(app, quote) {
     var pick = NIGHT.m.map(function () { return null; });
+    agent(app);
+    app.appendChild(el('p', 'cpx-k cpx-nk', IT ? 'Oppure costruisci la serata, momento per momento' : 'Or build the night, moment by moment'));
     var tl = el('div', 'cpx-n'), line = el('div', 'cpx-nl'); tl.appendChild(line); app.appendChild(tl);
     var cols = NIGHT.m.map(function (m, i) {
       var c = el('div', 'cpx-mo'); c.appendChild(el('div', 'cpx-dot', String(i + 1)));
@@ -367,7 +431,6 @@
     });
     var send = el('div', 'cpx-send'), go = el('a', 'cpx-btn', esc(NIGHT.send)); go.target = '_blank'; go.rel = 'noopener';
     send.appendChild(go); if (quote) send.appendChild(quote); app.appendChild(send);
-    agent(app);
     function draw(fresh) {
       var lastOn = -1;
       cols.forEach(function (o, i) {
@@ -385,7 +448,8 @@
 
   // Cover Agent: his AI act search, reused as is (list from /entertainment + act-search.js from his worker)
   function agent(app) {
-    var box = el('div', 'cpx-agent cpx-idle'); box.appendChild(el('p', 'cpx-k', IT ? 'Oppure chiedi a Cover Agent, la nostra AI' : 'Or ask Cover Agent, our AI'));
+    var box = el('div', 'cpx-agent cpx-idle'); box.appendChild(el('p', 'cpx-at', '<span class="cpx-at1">COVER AGENT</span> <span class="cpx-at2">' + (IT ? 'la nostra AI' : 'our AI') + '</span>'));
+    box.appendChild(el('p', 'cpx-as', IT ? 'Scrivi l\u2019idea della tua serata: trova gli artisti tra eventi veri, dal 2025 a oggi.' : 'Type the idea of your night: it finds the acts among real events, from 2025 to today.'));
     var host = el('div', 'cpx-ah', '<p class="cpx-ld">' + (IT ? 'Carico il nostro archivio' : 'Loading our archive') + '\u2026</p>'); box.appendChild(host); app.appendChild(box);
     var done = false;
     function wire() {

@@ -1,4 +1,27 @@
-(function(){var G=document.currentScript,U=G&&G.src?G.src.replace(/[^/]*$/,""):"./",j=document.querySelectorAll(".cpx[data-cpx]");if(!j.length)return;var M=(document.documentElement.lang||"en").slice(0,2)==="it",J="393278417970",Y=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches;function e(r,p,n){var t=document.createElement(r);return p&&(t.className=p),n!=null&&(t.innerHTML=n),t}function u(r){return String(r).replace(/[&<>"]/g,function(p){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[p]})}function O(r){return"https://wa.me/"+J+"?text="+encodeURIComponent(r)}var Q="https://cover-agent-wedding.coverpageagency.workers.dev"+(/\.webflow\.io$/.test(location.hostname)?"/next":"");function W(r,p){try{fetch(Q+"/wedding/lead",{method:"POST",keepalive:!0,headers:{"content-type":"application/json"},body:JSON.stringify({kind:r,lang:M?"it":"en",page:location.pathname,data:p})})}catch{}}function F(r){return r.toLocaleString("en-US").replace(/,/g,M?".":",")+" EUR"}var _=`
+/* Cover Page, "the 4 that make most of your budget": three hand built experiences, no library.
+   Mounts into native Webflow blocks: <div class="cpx" data-cpx="menu|film|night"> ... <div class="cpx-app"></div></div>
+   menu  = catering: the visitor writes a printed menu card, live
+   film  = photo and video: a budget slider lights up a contact sheet of real wedding frames
+   night = entertainment: the evening hour by hour, one act per moment
+   Every result goes to WhatsApp with the full summary, so nothing is lost and no backend is needed. */
+(function () {
+  var SCRIPT = document.currentScript;
+  var BASE = SCRIPT && SCRIPT.src ? SCRIPT.src.replace(/[^/]*$/, '') : './';
+  var mounts = document.querySelectorAll('.cpx[data-cpx]');
+  if (!mounts.length) return;
+  var IT = (document.documentElement.lang || 'en').slice(0, 2) === 'it';
+  var WA = '393278417970';
+  var RM = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function el(tag, cls, html) { var e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; }
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function wa(text) { return 'https://wa.me/' + WA + '?text=' + encodeURIComponent(text); }
+  // anonymous answers go to the Cover Page wedding endpoint (same one the villa finder uses), never personal data
+  var API = 'https://cover-agent-wedding.coverpageagency.workers.dev' + (/\.webflow\.io$/.test(location.hostname) ? '/next' : '');
+  function save(kind, data) { try { fetch(API + '/wedding/lead', { method: 'POST', keepalive: true, headers: { 'content-type': 'application/json' }, body: JSON.stringify({ kind: kind, lang: IT ? 'it' : 'en', page: location.pathname, data: data }) }); } catch (e) {} }
+  function eur(n) { return n.toLocaleString('en-US').replace(/,/g, IT ? '.' : ',') + ' EUR'; }
+
+  var css = `
 /* these three cards now run on this script: anything else injected into them is hidden, the title stays */
 .cpb-body-1:has(>.cpx)>:not(.cpb-t):not(.cpx){display:none!important}
 /* location card: the native intro (Webflow) replaces the text the villa finder script writes */
@@ -155,9 +178,314 @@
 @media (max-width:600px){.cpx-btn{width:100%;padding:13px 14px!important;font-size:10.5px!important}}
 @media (max-width:1100px){.cpx-m{grid-template-columns:1fr}}
 @media (max-width:900px){.cpx-n{grid-template-columns:1fr;gap:26px;padding-left:46px}.cpx-n::before{left:15px;right:auto;top:0;bottom:0;width:1px;height:auto}.cpx-nl{left:15px;top:0;width:1px!important;height:var(--w,0%);transition:height 500ms cubic-bezier(.23,1,.32,1)}.cpx-dot{position:absolute;left:-46px;top:-4px}.cpx-t{margin-top:0}.cpx-mo .cpx-chips{flex-direction:row;flex-wrap:wrap}.cpx-sheet{grid-template-columns:repeat(4,minmax(0,1fr))}}
+/* 1.6: numbered cards, Cover Agent as the star, one card per phone screen */
+#budget-four{counter-reset:cpbn}
+#budget-four .cpb-t{counter-increment:cpbn}
+#budget-four .cpb-t::before{content:"0" counter(cpbn);display:block;font:500 11px/1 Inter,sans-serif;letter-spacing:.22em;color:rgba(20,19,17,.5);margin:0 0 8px}
+.cpx-agent{margin-top:clamp(22px,2vw,34px);padding:clamp(18px,1.8vw,30px);border:1px solid rgba(20,19,17,.22);border-radius:6px;border-top-width:1px}
+.cpx-at{margin:0 0 6px;line-height:1}
+.cpx-at1{font-family:"Classy Vogue",Georgia,serif;font-size:clamp(26px,2.2vw,40px);letter-spacing:.04em}
+.cpx-at2{font-family:Hurricane,cursive;font-size:clamp(30px,2.6vw,46px);color:var(--acc)}
+.cpx-as{font-size:clamp(13px,.95vw,16px);line-height:1.5;color:var(--mut);margin:0 0 14px;max-width:56ch}
+.cpx-nk{margin-top:clamp(22px,2vw,34px)}
+@media (max-width:767px){
+#budget-four .cpb-img-1{height:112px!important;min-height:0!important;object-fit:cover}
+#budget-four .cpb-body-1{padding:16px!important}
+#budget-four .cpb-t::before{margin-bottom:6px}
+.cpx{margin-top:10px}
+.cpx-app{margin-top:14px}
+.cpx-lead,.cpb-cardloc .cpx-lead{font-size:13.6px;line-height:1.5}
+.cpx-fact{font-size:12px;line-height:1.5;margin:8px 0 0}
+.cpx-quote{padding:9px 14px;font-size:11px;margin-top:10px}
+/* location: villa finder compact */
+.cpw-tool .cpw-modes{margin-bottom:8px}.cpw-tool .cpw-modes button{padding:7px 10px!important;font-size:13px!important}
+.cpw-tool .cpw-cnt{margin:2px 0 6px}.cpw-tool .cpw-cnt b{font-size:22px!important}
+.cpw-tool .cpw-pill{padding:4px!important}
+.cpw-tool .cpw-pill button,.cpw-tool .cpw-go{background:transparent!important;color:#141311!important;box-shadow:inset 0 0 0 1px #141311!important;padding:9px 14px!important;font-size:10.5px!important}
+.cpw-tool .cpw-flt{margin-top:8px}.cpw-tool .cpw-lakes,.cpw-tool .cpw-rg{margin-bottom:4px!important}
+.cpw-tool .cpw-chip{padding:5px 10px!important;font-size:12px!important}
+.cpw-tool .cpw-mapw p{font-size:12px!important;margin:0 0 6px!important}
+.cpw-tool .cpw-map svg{max-height:170px;width:100%}
+/* catering: wizard and menu card in one screen */
+.cpx-wz{min-height:0}
+.cpx-dots{margin-bottom:12px}.cpx-qn{margin-bottom:6px}
+.cpx-qt{font-size:22px;margin:0 0 10px}
+.cpx-big{font-size:16px;padding:8px 0}
+.cpx-nav{padding-top:10px}
+.cpx-m{gap:14px}
+.cpx-paper{min-height:0;padding:20px 16px}
+.cpx-paper::before{inset:8px}.cpx-paper::after{inset:11px}
+.cpx-ttl3{margin:0 0 8px}.cpx-s1{font-size:24px}.cpx-s2{font-size:19px}
+.cpx-pg{margin:0 0 8px}.cpx-co{margin:0 0 6px}.cpx-dish .cpx-hw,.cpx-live{font-size:13px;line-height:1.7}
+.cpx-empty{margin-top:8px;font-size:12.5px}
+/* photo and video: centred budget, smaller frames */
+.cpx-bf{text-align:center}.cpx-bf .cpx-k{text-align:center}
+.cpx-bfr{margin:0 auto;justify-content:center}.cpx-bfr .cpx-bud{text-align:center;font-size:22px}
+.cpx-res{text-align:center}.cpx-pk{justify-items:center;text-align:center;grid-template-columns:1fr}
+.cpx-pkn{font-size:22px}.cpx-pkd{font-size:12.8px;margin:0 auto}
+.cpx-res .cpx-sheet{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:14px}
+.cpx-res .cpx-cap{font-size:9px;padding:16px 4px 4px}
+.cpx-send{justify-content:center;margin-top:14px;gap:10px}
+/* entertainment: the six moments in one swipeable line */
+.cpx-n{display:flex!important;grid-template-columns:none!important;gap:10px!important;padding:0 0 6px!important;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.cpx-n::-webkit-scrollbar{display:none}
+.cpx-n::before{left:0!important;right:0!important;top:15px!important;bottom:auto!important;width:auto!important;height:1px!important}
+.cpx-nl{left:0!important;top:15px!important;height:1px!important;width:var(--w,0%)!important}
+.cpx-mo{flex:0 0 58%;scroll-snap-align:start;padding:0 6px 0 0!important}
+.cpx-mo .cpx-dot{position:relative!important;left:auto!important;top:auto!important}
+.cpx-mn{font-size:18px;margin:10px 0 8px}
+.cpx-mo .cpx-chip{font-size:12px;padding:6px 10px}
+.cpx-pick{font-size:20px;min-height:20px;margin-top:6px}
+.cpx-agent{padding:16px}
+.cpx-at1{font-size:24px}.cpx-at2{font-size:30px}
+.cpx-as{font-size:12.5px}
+}
 @media (prefers-reduced-motion:reduce){.cpx *,.cpx *::before,.cpx *::after{animation:none!important;transition:none!important}}
-`,N=e("style");N.id="cpx-css",N.textContent=_,document.head.appendChild(N);var l=M?{Q:[["guests","Quanti ospiti?","num","120",1],["where","Dove si sposa? Location o villa","text","Villa sul Lago di Como",1],["date","Quando? Anche indicativo","text","Giugno 2027",0],["style","Come volete il servizio?","chips",["Servito","Buffet","Family style","Isole"],0],["aperitivo","Aperitivo","area","Bollicine, finger food, crudo",0],["antipasto","Antipasto","area","Vitello tonnato, burrata, tartare",0],["primo","Primo","area","Risotto alla milanese, ravioli",0],["secondo","Secondo","area","Pesce di lago, filetto, cotoletta",0],["dolce","Dolce e torta","area","Torta nuziale, sorbetto, mignon",0],["bar","Bevande e open bar","area","Vini, cocktail, open bar dopo cena",0],["note","Esigenze particolari","area","Vegetariani, allergie, bambini",0]],next:"Avanti",back:"Indietro",skip:"Salta",send:"Invia il mio menu",req:"Ci serve questa risposta per il preventivo.",t1:"Il vostro",t2:"WEDDING DREAM",t3:"menu",guests:"ospiti",empty:"rispondete, il menu si scrive da solo",note:"Nota",done:"Dove vi mandiamo il preventivo?",em:"Email",ph:"Telefono",need:"Email e telefono servono per inviarvi il preventivo.",sending:"Invio",ok:"Ricevuto. Il vostro preventivo su misura arriva entro 24 ore.",ko:"Invio non riuscito, riprovate tra un attimo.",msg:"Ciao Cover Page, ecco il menu dei nostri sogni"}:{Q:[["guests","How many guests?","num","120",1],["where","Where is the wedding? Location or villa","text","Villa on Lake Como",1],["date","When? Even approximate","text","June 2027",0],["style","How do you want the service?","chips",["Plated","Buffet","Family style","Food stations"],0],["aperitivo","Aperitivo","area","Bubbles, finger food, crudo",0],["antipasto","Starter","area","Vitello tonnato, burrata, tartare",0],["primo","First course","area","Risotto alla milanese, ravioli",0],["secondo","Main course","area","Lake fish, fillet, cotoletta",0],["dolce","Dessert and cake","area","Wedding cake, sorbet, petit fours",0],["bar","Drinks and open bar","area","Wines, cocktails, open bar after dinner",0],["note","Special requirements","area","Vegetarians, allergies, children",0]],next:"Next",back:"Back",skip:"Skip",send:"Send my menu",req:"We need this answer for the quote.",t1:"Your",t2:"WEDDING DREAM",t3:"menu",guests:"guests",empty:"answer, and the menu writes itself",note:"Note",done:"Where do we send your quote?",em:"Email",ph:"Phone",need:"We need your email and phone to send your quote.",sending:"Sending",ok:"Received. Your bespoke quote arrives within 24 hours.",ko:"Sending failed, please try again in a moment.",msg:"Hello Cover Page, here is our dream menu"};(function(){if(!document.getElementById("cpx-hand")){var r=e("link");r.id="cpx-hand",r.rel="stylesheet",r.href="https://fonts.googleapis.com/css2?family=Homemade+Apple&display=swap",document.head.appendChild(r)}})();function $(r,p){var n=l.Q,t={},o=0,A={},g=e("div","cpx-m"),h=e("div","cpx-ctl cpx-wz"),c=e("div","cpx-paper");g.append(h,c),r.appendChild(g);var s=e("div","cpx-dots");n.forEach(function(){s.appendChild(e("i"))}),h.appendChild(s);var i=e("div","cpx-q");h.appendChild(i);var v=e("p","cpx-err");h.appendChild(v);var w=e("div","cpx-nav"),d=e("button","cpx-btn cpx-ghost",u(l.back)),C=e("button","cpx-skip",u(l.skip)),E=e("button","cpx-btn",u(l.next));d.type=C.type=E.type="button",w.append(d,E,C),h.appendChild(w);var L=e("div","cpx-send"),P=e("button","cpx-btn",u(l.send));P.type="button",L.appendChild(P),p&&L.appendChild(p),h.appendChild(L);var B="";P.onclick=function(){var a=i.querySelector(".cpx-em"),x=i.querySelector(".cpx-ph");if(!a||!x||!a.value.trim()||!x.value.trim()||!a.checkValidity()){v.textContent=l.need,(a&&!a.value.trim()?a:x).focus();return}var b=document.getElementById("cpx-menu-form");if(W("menu",t),!b){v.textContent=l.ko;return}b.querySelector("[name=Email]").value=a.value.trim(),b.querySelector("[name=Phone]").value=x.value.trim(),b.querySelector("[name=Menu]").value=B,P.disabled=!0,P.textContent=l.sending,v.textContent="";var m=b.closest(".w-form"),T=Date.now();(function H(){var q=m&&m.querySelector(".w-form-done"),D=m&&m.querySelector(".w-form-fail");if(q&&getComputedStyle(q).display!=="none"){L.innerHTML="",i.innerHTML='<p class="cpx-qt">'+l.ok+"</p>";return}if(D&&getComputedStyle(D).display!=="none"||Date.now()-T>15e3){P.disabled=!1,P.textContent=l.send,v.textContent=l.ko;return}setTimeout(H,250)})(),b.requestSubmit?b.requestSubmit():b.dispatchEvent(new Event("submit",{cancelable:!0,bubbles:!0}))};var k;function z(){v.textContent="";var a=n[o];[].forEach.call(s.children,function(q,D){q.className=D<o?"on":D===o?"cur":""});var x=o>=n.length;if(h.classList.toggle("cpx-fin",x),w.hidden=x,L.hidden=!x,x){i.innerHTML='<p class="cpx-qt">'+l.done+" <span>*</span></p>";var b=e("input","cpx-in cpx-big cpx-em"),m=e("input","cpx-in cpx-big cpx-ph");b.type="email",b.required=!0,b.placeholder=l.em,b.autocomplete="email",b.setAttribute("aria-label",l.em),m.type="tel",m.required=!0,m.placeholder=l.ph,m.autocomplete="tel",m.setAttribute("aria-label",l.ph),i.append(b,m);var T=L.querySelector(".cpx-skip");T&&T.remove();var H=e("button","cpx-skip",u(l.back));H.type="button",H.onclick=function(){o--,z()},L.appendChild(H),R();return}if(i.innerHTML='<p class="cpx-qn">'+(o+1)+" / "+n.length+'</p><p class="cpx-qt">'+u(a[1])+(a[4]?" <span>*</span>":"")+"</p>",a[2]==="chips"?(k=e("div","cpx-chips"),a[3].forEach(function(q){var D=e("button","cpx-chip",u(q));D.type="button",D.setAttribute("aria-pressed",t[a[0]]===q),D.onclick=function(){t[a[0]]=q,R(),setTimeout(function(){o++,z()},260)},k.appendChild(D)})):(k=e(a[2]==="area"?"textarea":"input","cpx-in cpx-big"),k.placeholder=a[3],k.value=t[a[0]]||"",a[2]==="num"?(k.type="number",k.min=1,k.inputMode="numeric"):k.maxLength=160,a[2]==="area"&&(k.rows=2),k.addEventListener("input",function(){t[a[0]]=k.value.trim(),R()}),k.addEventListener("keydown",function(q){q.key==="Enter"&&!q.shiftKey&&(q.preventDefault(),S())})),i.appendChild(k),d.hidden=o===0,C.hidden=!!a[4]||a[2]==="chips"&&!1,k.focus&&o>0)try{k.focus({preventScroll:!0})}catch{}R()}function S(){var a=n[o];if(a[4]&&!t[a[0]]){v.textContent=l.req;return}o++,z()}E.onclick=S,C.onclick=function(){delete t[n[o][0]],o++,z()},d.onclick=function(){o>0&&(o--,z())};function f(a,x){var b=!A[x];return A[x]=1,'<span class="cpx-hw'+(b?" cpx-write":"")+'">'+u(a)+"</span>"}function y(a){return String(a).split(/,|\n/).map(function(x){return x.trim()}).filter(Boolean)}function R(){var a=[];t.guests&&a.push(t.guests+" "+l.guests),t.where&&a.push(t.where),t.date&&a.push(t.date),t.style&&a.push(t.style);var x='<p class="cpx-ttl3"><span class="cpx-s1">'+l.t1+'</span> <span class="cpx-s2">'+l.t2+'</span> <span class="cpx-s1">'+l.t3+"</span></p>";x+='<p class="cpx-pg">'+a.map(function(m){return f(m,"m"+m)}).join("<i> \xB7 </i>")+"</p>";var b=!1;n.slice(4,10).forEach(function(m){var T=t[m[0]];T&&(b=!0,x+='<div class="cpx-co"><h5>'+u(m[1])+"</h5>"+y(T).map(function(H){return'<span class="cpx-dish">'+f(H,m[0]+H)+"</span>"}).join("")+"</div>")}),t.note&&(x+='<p class="cpx-note"><b>'+l.note+"</b> "+f(t.note,"n"+t.note)+"</p>"),!b&&!a.length&&(x+='<span class="cpx-empty">'+l.empty+"</span>"),c.innerHTML=x,B=a.join(", ")+`
-`+n.slice(4).map(function(m){return t[m[0]]?m[1]+": "+t[m[0]]:""}).filter(Boolean).join(`
-`)}z()}var I=M?{k:"Il tuo budget foto e video",ph:"Il tuo budget in euro, es. 1500",see:"Vedi tutto ci\xF2 che ottieni",change:"Cambia budget",send:"Ricevi la proposta",more:"Vedi i pacchetti",msg:"Ciao Cover Page, il nostro budget foto e video \xE8",below:"Sotto i nostri pacchetti: il primo parte da 790 EUR.",pop:"Il pi\xF9 scelto",link:"/it/foto-video-matrimonio-milano",items:[["Foto editate"],["Color grading e ritocco"],["Album digitale"],["Sneak peek in giornata"],["Film del matrimonio",1],["Sceneggiato, sound design",1],["Teaser",1],["Fino a 7 angolazioni",1],["Versione social",1],["Pi\xF9 operatori"],["Drone",1],["Pi\xF9 punti di vista"]],pk:[{n:"Fotografia",p:790,on:[0,1,2,3],d:"300 foto editate, color grading e ritocco, un album digitale, sneak peek: 3 foto in giornata o 9 il giorno dopo."},{n:"Videografia",p:990,on:[4,5,6,7],d:"Un film del matrimonio sceneggiato con sound design e color grading, un teaser per i social, fino a sette angolazioni."},{n:"Foto e video",p:1490,pop:1,on:[0,1,4,5,8],d:"150 foto editate con color grading e ritocco, un film del matrimonio sceneggiato con sound design e versione social."},{n:"Su misura",p:2500,on:[0,1,4,5,8,9,10,11],d:"Il nostro pacchetto pi\xF9 alto pi\xF9 un progetto su misura: pi\xF9 operatori per foto, video e drone, pi\xF9 punti di vista, pi\xF9 profondit\xE0 in ci\xF2 che ricevi. Pi\xF9 invitati richiedono pi\xF9 talenti."}]}:{k:"Your photo and video budget",ph:"Your budget in euro, e.g. 1500",see:"See all you get",change:"Change budget",send:"Get the proposal",more:"See the packages",msg:"Hello Cover Page, our photo and video budget is",below:"Below our packages: the first one starts at 790 EUR.",pop:"Most popular",link:"https://www.coverpageagency.com/foto-video-matrimonio-milano",items:[["Edited photos"],["Colour graded and retouched"],["Digital album"],["Same day sneak peek"],["Wedding film",1],["Scripted, sound design",1],["Wedding teaser",1],["Up to 7 camera angles",1],["Social cut",1],["More operators"],["Drone",1],["More points of view"]],pk:[{n:"Photography",p:790,on:[0,1,2,3],d:"300 edited photos, colour graded and retouched, one digital album, sneak peek: 3 photos the same day or 9 the next day."},{n:"Videography",p:990,on:[4,5,6,7],d:"A scripted wedding film with sound design and colour grading, a teaser for social, up to seven camera angles."},{n:"Photo and video",p:1490,pop:1,on:[0,1,4,5,8],d:"150 edited photos, colour graded and retouched, plus a scripted wedding film with sound design and a social cut."},{n:"Custom build",p:2500,on:[0,1,4,5,8,9,10,11],d:"Our highest package plus a custom build: more operators for photo, video and drone, more points of view, more depth in what you receive. A larger guest list needs more talents."}]};function K(r,p){var n=I.pk,t=e("form","cpx-bf"),o=e("label","cpx-k",u(I.k)),A=e("div","cpx-bfr"),g=e("input","cpx-in cpx-bud"),h=e("button","cpx-btn",u(I.see));g.type="number",g.min=0,g.step=50,g.inputMode="numeric",g.placeholder=I.ph,g.setAttribute("aria-label",I.k),h.type="submit",A.append(e("span","cpx-eur","EUR"),g,h),t.append(o,A),r.appendChild(t);var c=e("div","cpx-res");c.hidden=!0,r.appendChild(c);var s=e("div","cpx-pk"),i=e("p","cpx-pkn"),v=e("span","cpx-pkp"),w=e("p","cpx-pkd");s.append(i,v,w),c.appendChild(s);var d=e("div","cpx-sheet");c.appendChild(d);var C=I.items.map(function(z,S){var f=e("div","cpx-fr"+(z[1]?" mv":"")),y=e("img");return y.alt="",y.loading="lazy",y.decoding="async",y.src=U+"wed/"+(S+1)+".webp",f.append(y,e("b","cpx-cap",u(z[0]))),d.appendChild(f),f}),E=e("div","cpx-send"),L=e("a","cpx-btn",u(I.send)),P=e("button","cpx-btn cpx-ghost",u(I.change)),B=e("a","cpx-more",u(I.more));L.target="_blank",L.rel="noopener",B.href=I.link,P.type="button",E.append(L,P),p&&E.appendChild(p),E.appendChild(B),c.appendChild(E);function k(z){for(var S=-1,f=0;f<n.length;f++)z>=n[f].p&&(S=f);return S}t.onsubmit=function(z){z.preventDefault();var S=Math.round(+g.value);if(!S||S<1){g.focus();return}var f=k(S),y=n[f];W("budget",{budget:S,pick:f<0?"under":y.n}),i.innerHTML=f<0?u(F(S)):u(y.n)+(y.pop?" <em>"+I.pop+"</em>":""),v.textContent=f<0?"":f===3?F(n[2].p)+" +":F(y.p),w.textContent=f<0?I.below:y.d,C.forEach(function(a){a.classList.remove("on")}),c.hidden=!1,t.classList.add("cpx-used");var R=0;requestAnimationFrame(function(){requestAnimationFrame(function(){C.forEach(function(a,x){f>=0&&y.on.indexOf(x)>=0&&(a.style.animationDelay=(Y?0:120+R++*120)+"ms",a.classList.add("on"))})})}),L.href=O(I.msg+" "+F(S)+(f>=0?" ("+y.n+")":""))},P.onclick=function(){c.hidden=!0,t.classList.remove("cpx-used"),g.focus()}}(function(){var r=document.querySelector(".cpb-cardloc");if(!r||!window.MutationObserver)return;function p(t){t.dataset.cpx||(t.dataset.cpx="1",setTimeout(function(){t.classList.add("cpx-crx");var o=e("button","cpx-cri","i");o.type="button",o.setAttribute("aria-label",t.textContent),o.title=t.textContent,o.onclick=function(){t.classList.toggle("cpx-crx")},t.parentNode.insertBefore(o,t)},5e3))}var n=function(){[].forEach.call(r.querySelectorAll(".cpw-mapw p.cr"),p)};new MutationObserver(n).observe(r,{childList:!0,subtree:!0}),n()})();var V=M?{m:[["15:30","Cerimonia",["Musicisti dal vivo","Voce e archi","Arpa"]],["17:00","Aperitivo",["Intrattenimento itinerante","Trio jazz","Sax"]],["19:30","Cena",["Band dal vivo","Pianoforte","Cantante"]],["22:00","Primo ballo",["Live band","Ballerini","Show di luci"]],["22:30","Festa",["DJ","DJ e sax","Show LED"]],["00:30","A tarda notte",["Show di fuoco","Acrobati","Fuochi d\u2019artificio"]]],send:"Ricevi la proposta",msg:"Ciao Cover Page, ecco la nostra serata"}:{m:[["15:30","Ceremony",["Live musicians","Voice and strings","Harp"]],["17:00","Aperitivo",["Roaming entertainment","Jazz trio","Saxophone"]],["19:30","Dinner",["Live band","Piano","Singer"]],["22:00","First dance",["Live band","Dancers","Light show"]],["22:30","Party",["DJ","DJ and sax","LED show"]],["00:30","Late night",["Fire show","Acrobats","Circus act"]]],send:"Get the proposal",msg:"Hello Cover Page, here is our night"};function X(r,p){var n=V.m.map(function(){return null}),t=e("div","cpx-n"),o=e("div","cpx-nl");t.appendChild(o),r.appendChild(t);var A=V.m.map(function(s,i){var v=e("div","cpx-mo");v.appendChild(e("div","cpx-dot",String(i+1))),v.appendChild(e("p","cpx-mn",u(s[1])));var w=e("div","cpx-chips");s[2].forEach(function(C){var E=e("button","cpx-chip",u(C));E.type="button",E.onclick=function(){n[i]=n[i]===C?null:C,c(i)},w.appendChild(E)}),v.appendChild(w);var d=e("p","cpx-pick");return v.appendChild(d),t.appendChild(v),{c:v,ch:w,pk:d}}),g=e("div","cpx-send"),h=e("a","cpx-btn",u(V.send));h.target="_blank",h.rel="noopener",g.appendChild(h),p&&g.appendChild(p),r.appendChild(g),Z(r);function c(s){var i=-1;A.forEach(function(w,d){w.c.classList.toggle("on",!!n[d]),n[d]&&(i=d),[].forEach.call(w.ch.children,function(C){C.setAttribute("aria-pressed",C.textContent===n[d])}),(d===s||!n[d])&&(w.pk.innerHTML=n[d]?"<span>"+u(n[d])+"</span>":"")}),t.style.setProperty("--w",i<0?"0%":(i+.5)/V.m.length*100+"%");var v=n.some(Boolean);h.onclick=function(){W("night",n)},h.href=O(V.msg+`
-`+V.m.map(function(w,d){return n[d]?w[1]+": "+n[d]:""}).filter(Boolean).join(`
-`)),h.setAttribute("aria-disabled",!v)}c()}function Z(r){var p=e("div","cpx-agent cpx-idle");p.appendChild(e("p","cpx-k",M?"Oppure chiedi a Cover Agent, la nostra AI":"Or ask Cover Agent, our AI"));var n=e("div","cpx-ah",'<p class="cpx-ld">'+(M?"Carico il nostro archivio":"Loading our archive")+"\u2026</p>");p.appendChild(n),r.appendChild(p);var t=!1;function o(){var c=function(){p.classList.remove("cpx-idle")},s=n.querySelector("#cpa-as input");s&&s.addEventListener("input",function(){s.value.length>1&&c()}),s&&s.addEventListener("keydown",function(i){i.key==="Enter"&&c()}),n.addEventListener("click",function(i){i.target.closest("#cpa-as button, #cpa-as .op, #cpa-as .chips *")&&c()})}function A(c){var s=document.querySelector("#cpw-ent"),i=s&&s.querySelector("#cpa-as");if(i){for(n.innerHTML="";s.firstChild;)n.appendChild(s.firstChild);return o(),!0}return c>0&&setTimeout(function(){A(c-1)},300),!1}function g(){if(!t){if(t=!0,document.querySelector("#cpw-ent")||window.__cpaActSearch){A(100);return}fetch((M?"/it":"")+"/entertainment").then(function(c){return c.text()}).then(function(c){var s=new DOMParser().parseFromString(c,"text/html").querySelector(".entertainment-list");if(!s)throw 0;if(n.innerHTML="",n.appendChild(document.importNode(s.closest(".w-dyn-list")||s,!0)),window.__cpaActSearch){A(100);return}var i=document.createElement("script");i.defer=!0,i.src="https://cover-agent-ai.coverpageagency.workers.dev/"+(/\.webflow\.io$/.test(location.hostname)?"next/":"")+"act-search.js",i.onload=o,document.body.appendChild(i)}).catch(function(){n.innerHTML='<a class="cpx-more" href="'+(M?"/it":"")+'/entertainment">'+(M?"Apri il nostro archivio":"Open our archive")+"</a>"})}}if("IntersectionObserver"in window){var h=new IntersectionObserver(function(c){c[0].isIntersecting&&(h.disconnect(),g())},{rootMargin:"900px"});h.observe(p)}else g()}var ee={menu:$,film:K,night:X};[].forEach.call(j,function(r){var p=ee[r.dataset.cpx],n=r.querySelector(".cpx-app");if(!(!p||!n||n.dataset.on)){n.dataset.on="1";var t=r.querySelector(".cpx-quote");try{p(n,t)}catch{t&&!t.parentNode.isConnected&&r.appendChild(t)}}})})();
+`;
+  var st = el('style'); st.id = 'cpx-css'; st.textContent = css; document.head.appendChild(st);
+
+  /* ---------------- catering: the Cover Page catering brief, one question at a time, written on the menu as it goes ---------------- */
+  var MENU = IT ? {
+    Q: [['guests', 'Quanti ospiti?', 'num', '120', 1], ['where', 'Dove si sposa? Location o villa', 'text', 'Villa sul Lago di Como', 1], ['date', 'Quando? Anche indicativo', 'text', 'Giugno 2027', 0], ['style', 'Come volete il servizio?', 'chips', ['Servito', 'Buffet', 'Family style', 'Isole'], 0], ['aperitivo', 'Aperitivo', 'area', 'Bollicine, finger food, crudo', 0], ['antipasto', 'Antipasto', 'area', 'Vitello tonnato, burrata, tartare', 0], ['primo', 'Primo', 'area', 'Risotto alla milanese, ravioli', 0], ['secondo', 'Secondo', 'area', 'Pesce di lago, filetto, cotoletta', 0], ['dolce', 'Dolce e torta', 'area', 'Torta nuziale, sorbetto, mignon', 0], ['bar', 'Bevande e open bar', 'area', 'Vini, cocktail, open bar dopo cena', 0], ['note', 'Esigenze particolari', 'area', 'Vegetariani, allergie, bambini', 0]],
+    next: 'Avanti', back: 'Indietro', skip: 'Salta', send: 'Invia il mio menu', req: 'Ci serve questa risposta per il preventivo.',
+    t1: 'Il vostro', t2: 'WEDDING DREAM', t3: 'menu', guests: 'ospiti', empty: 'rispondete, il menu si scrive da solo', note: 'Nota', done: 'Dove vi mandiamo il preventivo?', em: 'Email', ph: 'Telefono', need: 'Email e telefono servono per inviarvi il preventivo.', sending: 'Invio', ok: 'Ricevuto. Il vostro preventivo su misura arriva entro 24 ore.', ko: 'Invio non riuscito, riprovate tra un attimo.',
+    msg: 'Ciao Cover Page, ecco il menu dei nostri sogni'
+  } : {
+    Q: [['guests', 'How many guests?', 'num', '120', 1], ['where', 'Where is the wedding? Location or villa', 'text', 'Villa on Lake Como', 1], ['date', 'When? Even approximate', 'text', 'June 2027', 0], ['style', 'How do you want the service?', 'chips', ['Plated', 'Buffet', 'Family style', 'Food stations'], 0], ['aperitivo', 'Aperitivo', 'area', 'Bubbles, finger food, crudo', 0], ['antipasto', 'Starter', 'area', 'Vitello tonnato, burrata, tartare', 0], ['primo', 'First course', 'area', 'Risotto alla milanese, ravioli', 0], ['secondo', 'Main course', 'area', 'Lake fish, fillet, cotoletta', 0], ['dolce', 'Dessert and cake', 'area', 'Wedding cake, sorbet, petit fours', 0], ['bar', 'Drinks and open bar', 'area', 'Wines, cocktails, open bar after dinner', 0], ['note', 'Special requirements', 'area', 'Vegetarians, allergies, children', 0]],
+    next: 'Next', back: 'Back', skip: 'Skip', send: 'Send my menu', req: 'We need this answer for the quote.',
+    t1: 'Your', t2: 'WEDDING DREAM', t3: 'menu', guests: 'guests', empty: 'answer, and the menu writes itself', note: 'Note', done: 'Where do we send your quote?', em: 'Email', ph: 'Phone', need: 'We need your email and phone to send your quote.', sending: 'Sending', ok: 'Received. Your bespoke quote arrives within 24 hours.', ko: 'Sending failed, please try again in a moment.',
+    msg: 'Hello Cover Page, here is our dream menu'
+  };
+  // a pen script for everything the couple writes
+  (function () { if (document.getElementById('cpx-hand')) return; var l = el('link'); l.id = 'cpx-hand'; l.rel = 'stylesheet'; l.href = 'https://fonts.googleapis.com/css2?family=Homemade+Apple&display=swap'; document.head.appendChild(l); })();
+  function menu(app, quote) {
+    var Q = MENU.Q, A = {}, i = 0, seen = {};
+    var wrap = el('div', 'cpx-m'), ctl = el('div', 'cpx-ctl cpx-wz'), paper = el('div', 'cpx-paper');
+    wrap.append(ctl, paper); app.appendChild(wrap);
+    var dots = el('div', 'cpx-dots'); Q.forEach(function () { dots.appendChild(el('i')); }); ctl.appendChild(dots);
+    var stage = el('div', 'cpx-q'); ctl.appendChild(stage);
+    var err = el('p', 'cpx-err'); ctl.appendChild(err);
+    var nav = el('div', 'cpx-nav'), back = el('button', 'cpx-btn cpx-ghost', esc(MENU.back)), skip = el('button', 'cpx-skip', esc(MENU.skip)), next = el('button', 'cpx-btn', esc(MENU.next));
+    back.type = skip.type = next.type = 'button'; nav.append(back, next, skip); ctl.appendChild(nav);
+    var send = el('div', 'cpx-send'), go = el('button', 'cpx-btn', esc(MENU.send)); go.type = 'button'; send.appendChild(go); if (quote) send.appendChild(quote); ctl.appendChild(send);
+    var msgTxt = '';
+    // the menu is sent straight to Cover Page through the native Webflow form in this card (email notification, no WhatsApp step)
+    go.onclick = function () {
+      var em = stage.querySelector('.cpx-em'), ph = stage.querySelector('.cpx-ph');
+      if (!em || !ph || !em.value.trim() || !ph.value.trim() || !em.checkValidity()) { err.textContent = MENU.need; (em && !em.value.trim() ? em : ph).focus(); return; }
+      var form = document.getElementById('cpx-menu-form');
+      save('menu', A);
+      if (!form) { err.textContent = MENU.ko; return; }
+      form.querySelector('[name=Email]').value = em.value.trim(); form.querySelector('[name=Phone]').value = ph.value.trim(); form.querySelector('[name=Menu]').value = msgTxt;
+      go.disabled = true; go.textContent = MENU.sending; err.textContent = '';
+      var wrap = form.closest('.w-form'), t0 = Date.now();
+      (function watch() {
+        var done = wrap && wrap.querySelector('.w-form-done'), fail = wrap && wrap.querySelector('.w-form-fail');
+        if (done && getComputedStyle(done).display !== 'none') { send.innerHTML = ''; stage.innerHTML = '<p class="cpx-qt">' + MENU.ok + '</p>'; return; }
+        if (fail && getComputedStyle(fail).display !== 'none' || Date.now() - t0 > 15000) { go.disabled = false; go.textContent = MENU.send; err.textContent = MENU.ko; return; }
+        setTimeout(watch, 250);
+      })();
+      if (form.requestSubmit) form.requestSubmit(); else form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+    };
+    var field;
+    function ask() {
+      err.textContent = ''; var q = Q[i];
+      [].forEach.call(dots.children, function (d, k) { d.className = k < i ? 'on' : k === i ? 'cur' : ''; });
+      var done = i >= Q.length;
+      ctl.classList.toggle('cpx-fin', done); nav.hidden = done; send.hidden = !done;
+      if (done) {
+        stage.innerHTML = '<p class="cpx-qt">' + MENU.done + ' <span>*</span></p>';
+        var e1 = el('input', 'cpx-in cpx-big cpx-em'), p1 = el('input', 'cpx-in cpx-big cpx-ph');
+        e1.type = 'email'; e1.required = true; e1.placeholder = MENU.em; e1.autocomplete = 'email'; e1.setAttribute('aria-label', MENU.em);
+        p1.type = 'tel'; p1.required = true; p1.placeholder = MENU.ph; p1.autocomplete = 'tel'; p1.setAttribute('aria-label', MENU.ph);
+        stage.append(e1, p1); var ob = send.querySelector('.cpx-skip'); if (ob) ob.remove(); var bk = el('button', 'cpx-skip', esc(MENU.back)); bk.type = 'button'; bk.onclick = function () { i--; ask(); }; send.appendChild(bk);
+        draw(); return;
+      }
+      stage.innerHTML = '<p class="cpx-qn">' + (i + 1) + ' / ' + Q.length + '</p><p class="cpx-qt">' + esc(q[1]) + (q[4] ? ' <span>*</span>' : '') + '</p>';
+      if (q[2] === 'chips') {
+        field = el('div', 'cpx-chips');
+        q[3].forEach(function (c) { var b = el('button', 'cpx-chip', esc(c)); b.type = 'button'; b.setAttribute('aria-pressed', A[q[0]] === c); b.onclick = function () { A[q[0]] = c; draw(); setTimeout(function () { i++; ask(); }, 260); }; field.appendChild(b); });
+      } else {
+        field = el(q[2] === 'area' ? 'textarea' : 'input', 'cpx-in cpx-big'); field.placeholder = q[3]; field.value = A[q[0]] || '';
+        if (q[2] === 'num') { field.type = 'number'; field.min = 1; field.inputMode = 'numeric'; } else field.maxLength = 160;
+        if (q[2] === 'area') field.rows = 2;
+        field.addEventListener('input', function () { A[q[0]] = field.value.trim(); draw(); });
+        field.addEventListener('keydown', function (e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); go1(); } });
+      }
+      stage.appendChild(field); back.hidden = i === 0; skip.hidden = !!q[4] || q[2] === 'chips' && false;
+      if (field.focus && i > 0) try { field.focus({ preventScroll: true }); } catch (e) {}
+      draw();
+    }
+    function go1() { var q = Q[i]; if (q[4] && !A[q[0]]) { err.textContent = MENU.req; return; } i++; ask(); }
+    next.onclick = go1; skip.onclick = function () { delete A[Q[i][0]]; i++; ask(); }; back.onclick = function () { if (i > 0) { i--; ask(); } };
+    function hw(text, key) { var fresh = !seen[key]; seen[key] = 1; return '<span class="cpx-hw' + (fresh ? ' cpx-write' : '') + '">' + esc(text) + '</span>'; }
+    function list(v) { return String(v).split(/,|\n/).map(function (x) { return x.trim(); }).filter(Boolean); }
+    function draw() {
+      var meta = [];
+      if (A.guests) meta.push(A.guests + ' ' + MENU.guests); if (A.where) meta.push(A.where); if (A.date) meta.push(A.date); if (A.style) meta.push(A.style);
+      var h = '<p class="cpx-ttl3"><span class="cpx-s1">' + MENU.t1 + '</span> <span class="cpx-s2">' + MENU.t2 + '</span> <span class="cpx-s1">' + MENU.t3 + '</span></p>';
+      h += '<p class="cpx-pg">' + meta.map(function (m) { return hw(m, 'm' + m); }).join('<i> · </i>') + '</p>';
+      var any = false;
+      Q.slice(4, 10).forEach(function (q) {
+        var v = A[q[0]]; if (!v) return; any = true;
+        h += '<div class="cpx-co"><h5>' + esc(q[1]) + '</h5>' + list(v).map(function (d) { return '<span class="cpx-dish">' + hw(d, q[0] + d) + '</span>'; }).join('') + '</div>';
+      });
+      if (A.note) h += '<p class="cpx-note"><b>' + MENU.note + '</b> ' + hw(A.note, 'n' + A.note) + '</p>';
+      if (!any && !meta.length) h += '<span class="cpx-empty">' + MENU.empty + '</span>';
+      paper.innerHTML = h;
+      msgTxt = meta.join(', ') + '\n' + Q.slice(4).map(function (q) { return A[q[0]] ? q[1] + ': ' + A[q[0]] : ''; }).filter(Boolean).join('\n');
+    }
+    ask();
+  }
+
+  /* ---------------- photo and video: the couple writes a budget, presses "see all you get", the deliverables pop ---------------- */
+  var FILM = IT ? {
+    k: 'Il tuo budget foto e video', ph: 'Il tuo budget in euro, es. 1500', see: 'Vedi tutto ciò che ottieni', change: 'Cambia budget', send: 'Ricevi la proposta', more: 'Vedi i pacchetti', msg: 'Ciao Cover Page, il nostro budget foto e video è',
+    below: 'Sotto i nostri pacchetti: il primo parte da 790 EUR.', pop: 'Il più scelto', link: '/it/foto-video-matrimonio-milano',
+    items: [['Foto editate'], ['Color grading e ritocco'], ['Album digitale'], ['Sneak peek in giornata'], ['Film del matrimonio', 1], ['Sceneggiato, sound design', 1], ['Teaser', 1], ['Fino a 7 angolazioni', 1], ['Versione social', 1], ['Più operatori'], ['Drone', 1], ['Più punti di vista']],
+    pk: [
+      { n: 'Fotografia', p: 790, on: [0, 1, 2, 3], d: '300 foto editate, color grading e ritocco, un album digitale, sneak peek: 3 foto in giornata o 9 il giorno dopo.' },
+      { n: 'Videografia', p: 990, on: [4, 5, 6, 7], d: 'Un film del matrimonio sceneggiato con sound design e color grading, un teaser per i social, fino a sette angolazioni.' },
+      { n: 'Foto e video', p: 1490, pop: 1, on: [0, 1, 4, 5, 8], d: '150 foto editate con color grading e ritocco, un film del matrimonio sceneggiato con sound design e versione social.' },
+      { n: 'Su misura', p: 2500, on: [0, 1, 4, 5, 8, 9, 10, 11], d: 'Il nostro pacchetto più alto più un progetto su misura: più operatori per foto, video e drone, più punti di vista, più profondità in ciò che ricevi. Più invitati richiedono più talenti.' }
+    ]
+  } : {
+    k: 'Your photo and video budget', ph: 'Your budget in euro, e.g. 1500', see: 'See all you get', change: 'Change budget', send: 'Get the proposal', more: 'See the packages', msg: 'Hello Cover Page, our photo and video budget is',
+    below: 'Below our packages: the first one starts at 790 EUR.', pop: 'Most popular', link: 'https://www.coverpageagency.com/foto-video-matrimonio-milano',
+    items: [['Edited photos'], ['Colour graded and retouched'], ['Digital album'], ['Same day sneak peek'], ['Wedding film', 1], ['Scripted, sound design', 1], ['Wedding teaser', 1], ['Up to 7 camera angles', 1], ['Social cut', 1], ['More operators'], ['Drone', 1], ['More points of view']],
+    pk: [
+      { n: 'Photography', p: 790, on: [0, 1, 2, 3], d: '300 edited photos, colour graded and retouched, one digital album, sneak peek: 3 photos the same day or 9 the next day.' },
+      { n: 'Videography', p: 990, on: [4, 5, 6, 7], d: 'A scripted wedding film with sound design and colour grading, a teaser for social, up to seven camera angles.' },
+      { n: 'Photo and video', p: 1490, pop: 1, on: [0, 1, 4, 5, 8], d: '150 edited photos, colour graded and retouched, plus a scripted wedding film with sound design and a social cut.' },
+      { n: 'Custom build', p: 2500, on: [0, 1, 4, 5, 8, 9, 10, 11], d: 'Our highest package plus a custom build: more operators for photo, video and drone, more points of view, more depth in what you receive. A larger guest list needs more talents.' }
+    ]
+  };
+  function film(app, quote) {
+    var PK = FILM.pk;
+    var f = el('form', 'cpx-bf'), lab = el('label', 'cpx-k', esc(FILM.k)), row = el('div', 'cpx-bfr'), inp = el('input', 'cpx-in cpx-bud'), btn = el('button', 'cpx-btn', esc(FILM.see));
+    inp.type = 'number'; inp.min = 0; inp.step = 50; inp.inputMode = 'numeric'; inp.placeholder = FILM.ph; inp.setAttribute('aria-label', FILM.k); btn.type = 'submit';
+    row.append(el('span', 'cpx-eur', 'EUR'), inp, btn); f.append(lab, row); app.appendChild(f);
+    var res = el('div', 'cpx-res'); res.hidden = true; app.appendChild(res);
+    var pk = el('div', 'cpx-pk'), pn = el('p', 'cpx-pkn'), pp = el('span', 'cpx-pkp'), pd = el('p', 'cpx-pkd'); pk.append(pn, pp, pd); res.appendChild(pk);
+    var sheet = el('div', 'cpx-sheet'); res.appendChild(sheet);
+    var frames = FILM.items.map(function (it, k) {
+      var fr = el('div', 'cpx-fr' + (it[1] ? ' mv' : '')), im = el('img'); im.alt = ''; im.loading = 'lazy'; im.decoding = 'async'; im.src = BASE + 'wed/' + (k + 1) + '.webp';
+      fr.append(im, el('b', 'cpx-cap', esc(it[0]))); sheet.appendChild(fr); return fr;
+    });
+    var sendRow = el('div', 'cpx-send'), go = el('a', 'cpx-btn', esc(FILM.send)), chg = el('button', 'cpx-btn cpx-ghost', esc(FILM.change)), more = el('a', 'cpx-more', esc(FILM.more));
+    go.target = '_blank'; go.rel = 'noopener'; more.href = FILM.link; chg.type = 'button';
+    sendRow.append(go, chg); if (quote) sendRow.appendChild(quote); sendRow.appendChild(more); res.appendChild(sendRow);
+    function tier(b) { var t = -1; for (var k = 0; k < PK.length; k++) if (b >= PK[k].p) t = k; return t; }
+    f.onsubmit = function (e) {
+      e.preventDefault(); var b = Math.round(+inp.value); if (!b || b < 1) { inp.focus(); return; }
+      var t = tier(b), P = PK[t];
+      save('budget', { budget: b, pick: t < 0 ? 'under' : P.n });
+      pn.innerHTML = t < 0 ? esc(eur(b)) : esc(P.n) + (P.pop ? ' <em>' + FILM.pop + '</em>' : ''); pp.textContent = t < 0 ? '' : (t === 3 ? eur(PK[2].p) + ' +' : eur(P.p));
+      pd.textContent = t < 0 ? FILM.below : P.d;
+      frames.forEach(function (fr) { fr.classList.remove('on'); });
+      res.hidden = false; f.classList.add('cpx-used');
+      var k = 0;
+      requestAnimationFrame(function () { requestAnimationFrame(function () {
+        frames.forEach(function (fr, n) { if (t >= 0 && P.on.indexOf(n) >= 0) { fr.style.animationDelay = (RM ? 0 : 120 + (k++) * 120) + 'ms'; fr.classList.add('on'); } });
+      }); });
+      go.href = wa(FILM.msg + ' ' + eur(b) + (t >= 0 ? ' (' + P.n + ')' : ''));
+    };
+    chg.onclick = function () { res.hidden = true; f.classList.remove('cpx-used'); inp.focus(); };
+  }
+
+  /* map credit in the villa finder: shown, then folded after five seconds into an (i) that opens it again
+     (OSM attribution guidelines allow a collapse after five seconds as long as the licence stays findable) */
+  (function () {
+    var card = document.querySelector('.cpb-cardloc'); if (!card || !window.MutationObserver) return;
+    function fold(p) {
+      if (p.dataset.cpx) return; p.dataset.cpx = '1';
+      setTimeout(function () {
+        p.classList.add('cpx-crx');
+        var b = el('button', 'cpx-cri', 'i'); b.type = 'button'; b.setAttribute('aria-label', p.textContent); b.title = p.textContent;
+        b.onclick = function () { p.classList.toggle('cpx-crx'); };
+        p.parentNode.insertBefore(b, p);
+      }, 5000);
+    }
+    var scan = function () { [].forEach.call(card.querySelectorAll('.cpw-mapw p.cr'), fold); };
+    new MutationObserver(scan).observe(card, { childList: true, subtree: true }); scan();
+  })();
+
+  /* ---------------- entertainment: the night, hour by hour ---------------- */
+  var NIGHT = IT ? {
+    m: [['15:30', 'Cerimonia', ['Musicisti dal vivo', 'Voce e archi', 'Arpa']], ['17:00', 'Aperitivo', ['Intrattenimento itinerante', 'Trio jazz', 'Sax']], ['19:30', 'Cena', ['Band dal vivo', 'Pianoforte', 'Cantante']], ['22:00', 'Primo ballo', ['Live band', 'Ballerini', 'Show di luci']], ['22:30', 'Festa', ['DJ', 'DJ e sax', 'Show LED']], ['00:30', 'A tarda notte', ['Show di fuoco', 'Acrobati', 'Fuochi d’artificio']]],
+    send: 'Ricevi la proposta', msg: 'Ciao Cover Page, ecco la nostra serata'
+  } : {
+    m: [['15:30', 'Ceremony', ['Live musicians', 'Voice and strings', 'Harp']], ['17:00', 'Aperitivo', ['Roaming entertainment', 'Jazz trio', 'Saxophone']], ['19:30', 'Dinner', ['Live band', 'Piano', 'Singer']], ['22:00', 'First dance', ['Live band', 'Dancers', 'Light show']], ['22:30', 'Party', ['DJ', 'DJ and sax', 'LED show']], ['00:30', 'Late night', ['Fire show', 'Acrobats', 'Circus act']]],
+    send: 'Get the proposal', msg: 'Hello Cover Page, here is our night'
+  };
+  function night(app, quote) {
+    var pick = NIGHT.m.map(function () { return null; });
+    agent(app);
+    app.appendChild(el('p', 'cpx-k cpx-nk', IT ? 'Oppure costruisci la serata, momento per momento' : 'Or build the night, moment by moment'));
+    var tl = el('div', 'cpx-n'), line = el('div', 'cpx-nl'); tl.appendChild(line); app.appendChild(tl);
+    var cols = NIGHT.m.map(function (m, i) {
+      var c = el('div', 'cpx-mo'); c.appendChild(el('div', 'cpx-dot', String(i + 1)));
+      c.appendChild(el('p', 'cpx-mn', esc(m[1])));
+      var ch = el('div', 'cpx-chips'); m[2].forEach(function (a) { var b = el('button', 'cpx-chip', esc(a)); b.type = 'button'; b.onclick = function () { pick[i] = pick[i] === a ? null : a; draw(i); }; ch.appendChild(b); });
+      c.appendChild(ch); var pk = el('p', 'cpx-pick'); c.appendChild(pk); tl.appendChild(c); return { c: c, ch: ch, pk: pk };
+    });
+    var send = el('div', 'cpx-send'), go = el('a', 'cpx-btn', esc(NIGHT.send)); go.target = '_blank'; go.rel = 'noopener';
+    send.appendChild(go); if (quote) send.appendChild(quote); app.appendChild(send);
+    function draw(fresh) {
+      var lastOn = -1;
+      cols.forEach(function (o, i) {
+        o.c.classList.toggle('on', !!pick[i]); if (pick[i]) lastOn = i;
+        [].forEach.call(o.ch.children, function (b) { b.setAttribute('aria-pressed', b.textContent === pick[i]); });
+        if (i === fresh || !pick[i]) o.pk.innerHTML = pick[i] ? '<span>' + esc(pick[i]) + '</span>' : '';
+      });
+      tl.style.setProperty('--w', lastOn < 0 ? '0%' : ((lastOn + 0.5) / NIGHT.m.length * 100) + '%');
+      var any = pick.some(Boolean);
+      go.onclick = function () { save('night', pick); }; go.href = wa(NIGHT.msg + '\n' + NIGHT.m.map(function (m, i) { return pick[i] ? m[1] + ': ' + pick[i] : ''; }).filter(Boolean).join('\n'));
+      go.setAttribute('aria-disabled', !any);
+    }
+    draw();
+  }
+
+  // Cover Agent: his AI act search, reused as is (list from /entertainment + act-search.js from his worker)
+  function agent(app) {
+    var box = el('div', 'cpx-agent cpx-idle'); box.appendChild(el('p', 'cpx-at', '<span class="cpx-at1">COVER AGENT</span> <span class="cpx-at2">' + (IT ? 'la nostra AI' : 'our AI') + '</span>'));
+    box.appendChild(el('p', 'cpx-as', IT ? 'Scrivi l\u2019idea della tua serata: trova gli artisti tra eventi veri, dal 2025 a oggi.' : 'Type the idea of your night: it finds the acts among real events, from 2025 to today.'));
+    var host = el('div', 'cpx-ah', '<p class="cpx-ld">' + (IT ? 'Carico il nostro archivio' : 'Loading our archive') + '\u2026</p>'); box.appendChild(host); app.appendChild(box);
+    var done = false;
+    function wire() {
+      var wake = function () { box.classList.remove('cpx-idle'); };
+      var i = host.querySelector('#cpa-as input'); if (i) i.addEventListener('input', function () { if (i.value.length > 1) wake(); });
+      if (i) i.addEventListener('keydown', function (e) { if (e.key === 'Enter') wake(); });
+      host.addEventListener('click', function (e) { if (e.target.closest('#cpa-as button, #cpa-as .op, #cpa-as .chips *')) wake(); });
+    }
+    // if the older page script already built the bar, adopt it here instead of loading a second copy
+    function adopt(tries) {
+      var old = document.querySelector('#cpw-ent'), as = old && old.querySelector('#cpa-as');
+      if (as) { host.innerHTML = ''; while (old.firstChild) host.appendChild(old.firstChild); wire(); return true; }
+      if (tries > 0) setTimeout(function () { adopt(tries - 1); }, 300); return false;
+    }
+    function load() {
+      if (done) return; done = true;
+      if (document.querySelector('#cpw-ent') || window.__cpaActSearch) { adopt(100); return; }
+      fetch((IT ? '/it' : '') + '/entertainment').then(function (r) { return r.text(); }).then(function (html) {
+        var L = new DOMParser().parseFromString(html, 'text/html').querySelector('.entertainment-list'); if (!L) throw 0;
+        host.innerHTML = ''; host.appendChild(document.importNode(L.closest('.w-dyn-list') || L, true));
+        if (window.__cpaActSearch) { adopt(100); return; }
+        var s = document.createElement('script'); s.defer = true;
+        s.src = 'https://cover-agent-ai.coverpageagency.workers.dev/' + (/\.webflow\.io$/.test(location.hostname) ? 'next/' : '') + 'act-search.js';
+        s.onload = wire;
+        document.body.appendChild(s);
+      }).catch(function () { host.innerHTML = '<a class="cpx-more" href="' + (IT ? '/it' : '') + '/entertainment">' + (IT ? 'Apri il nostro archivio' : 'Open our archive') + '</a>'; });
+    }
+    if ('IntersectionObserver' in window) { var io = new IntersectionObserver(function (e) { if (e[0].isIntersecting) { io.disconnect(); load(); } }, { rootMargin: '900px' }); io.observe(box); } else load();
+  }
+
+  var RUN = { menu: menu, film: film, night: night };
+  [].forEach.call(mounts, function (m) {
+    var fn = RUN[m.dataset.cpx], app = m.querySelector('.cpx-app');
+    if (!fn || !app || app.dataset.on) return; app.dataset.on = '1';
+    // the "quote within" line moves next to the send button, where the decision happens
+    var q = m.querySelector('.cpx-quote');
+    try { fn(app, q); } catch (e) { if (q && !q.parentNode.isConnected) m.appendChild(q); }
+  });
+})();
