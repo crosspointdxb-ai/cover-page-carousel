@@ -56,12 +56,12 @@ ready(async () => {
   // phones: lighter render (no MSAA, lower pixel ratio, cheaper shadows, no grain) so the motion stays smooth
   const MOB = innerWidth < 992 || matchMedia('(pointer: coarse)').matches;
   const renderer = new THREE.WebGLRenderer({ antialias: !MOB, alpha: true, powerPreference: 'high-performance' });
-  let PR = Math.min(devicePixelRatio || 1, MOB ? 1.5 : 1.75);
+  let PR = Math.min(devicePixelRatio || 1, MOB ? 2 : 1.75);
   renderer.setPixelRatio(PR);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.AgXToneMapping;
   renderer.toneMappingExposure = 1.15;
-  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.enabled = !MOB; // phones: no shadow pass (it renders the scene twice), resolution kept sharp instead
   renderer.shadowMap.type = MOB ? THREE.BasicShadowMap : THREE.PCFShadowMap;
   renderer.localClippingEnabled = true;
   const cv = renderer.domElement;
@@ -440,7 +440,7 @@ ready(async () => {
     const vf = THREE.MathUtils.degToRad(camera.fov), hf = 2 * Math.atan(Math.tan(vf / 2) * camera.aspect);
     const needW = (R0 + 0.06) * 2, needH = (yMax - yMin) * 1.04;
     const d = Math.max((needW / 2) / Math.tan(hf / 2), (needH / 2) / Math.tan(vf / 2)) + R * 1.1;
-    camBase.d = d; camera.zoom = SR.width >= 992 ? 1.62 : 2.56; camera.position.copy(target).addScaledVector(dir, d); camera.lookAt(target);
+    camBase.d = d; camera.zoom = SR.width >= 992 ? 1.62 : 2.82; camera.position.copy(target).addScaledVector(dir, d); camera.lookAt(target);
     // frame box = stage width x (stage height * EXT), its top EXT above the stage; desktop: cake 20% right and 20% higher; phone: 1.27x bigger and 10% higher
     const fl = SR.left - HR.left, ft = (SR.top - HR.top) - (EXT - 1) * sh, desk = w >= 992;
     camera.setViewOffset(w, h, -fl + (desk ? -0.2 * w : -0.08 * w), -ft + (desk ? 0.2 * h : 0.18 * h), W, H);
@@ -517,7 +517,7 @@ ready(async () => {
       const upNow = 1 - hinges[b.i].rotation.x / (Math.PI * 0.5);
       b.mesh.material.opacity = (p < 0.18 ? p / 0.18 : p > 0.7 ? Math.max(0, (1 - p) / 0.3) : 1) * upNow;
     }
-    if (MOB && PR > 1) { fc++; ft2 += dt; if (fc === 90) { if (ft2 / fc > 0.021) { PR = 1; renderer.setPixelRatio(1); frame(); } fc = 0; ft2 = 0; } }
+    if (MOB && PR > 1.5) { fc++; ft2 += dt; if (fc === 90) { if (ft2 / fc > 0.021) { PR = 1.5; renderer.setPixelRatio(1.5); frame(); } fc = 0; ft2 = 0; } }
     renderer.render(scene, camera);
     if (!shown) { shown = true; requestAnimationFrame(() => { cv.style.opacity = '1'; stage.classList.add('cpw-gl'); stage.style.overflow = 'visible'; stage.style.contain = 'none'; }); }
     raf = requestAnimationFrame(loop);
