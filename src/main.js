@@ -440,10 +440,10 @@ ready(async () => {
     const vf = THREE.MathUtils.degToRad(camera.fov), hf = 2 * Math.atan(Math.tan(vf / 2) * camera.aspect);
     const needW = (R0 + 0.06) * 2, needH = (yMax - yMin) * 1.04;
     const d = Math.max((needW / 2) / Math.tan(hf / 2), (needH / 2) / Math.tan(vf / 2)) + R * 1.1;
-    camBase.d = d; camera.zoom = SR.width >= 992 ? 1.62 : 3.38; camera.position.copy(target).addScaledVector(dir, d); camera.lookAt(target);
+    camBase.d = d; const TU = window.__cpwTune || {}; camera.zoom = SR.width >= 992 ? 1.62 : (TU.z || 3.72); camera.position.copy(target).addScaledVector(dir, d); camera.lookAt(target);
     // frame box = stage width x (stage height * EXT), its top EXT above the stage; desktop: cake 20% right and 20% higher; phone: 1.27x bigger and 10% higher
     const fl = SR.left - HR.left, ft = (SR.top - HR.top) - (EXT - 1) * sh, desk = w >= 992;
-    camera.setViewOffset(w, h, -fl + (desk ? -0.2 * w : -0.23 * w), -ft + (desk ? 0.2 * h : 0.33 * h), W, H);
+    camera.setViewOffset(w, h, -fl + (desk ? -0.2 * w : (TU.x != null ? TU.x : -0.26) * w), -ft + (desk ? 0.2 * h : (TU.y != null ? TU.y : 0.03) * h), W, H);
     camera.updateProjectionMatrix();
     scene.fog.near = d - R * 0.2; scene.fog.far = d + R * 2.6;
   }
