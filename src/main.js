@@ -53,13 +53,16 @@ ready(async () => {
   try { await Promise.race([Promise.all([document.fonts.load('60px "Classy Vogue"'), document.fonts.load('24px Inter'), document.fonts.load('80px Hurricane')]), new Promise(r => setTimeout(r, 1500))]); } catch (e) {}
   const SERIF = '"Classy Vogue", Georgia, serif', SANS = 'Inter, Helvetica, Arial, sans-serif';
 
-  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
-  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 1.75));
+  // phones: lighter render (no MSAA, lower pixel ratio, cheaper shadows, no grain) so the motion stays smooth
+  const MOB = innerWidth < 992 || matchMedia('(pointer: coarse)').matches;
+  const renderer = new THREE.WebGLRenderer({ antialias: !MOB, alpha: true, powerPreference: 'high-performance' });
+  let PR = Math.min(devicePixelRatio || 1, MOB ? 1.5 : 1.75);
+  renderer.setPixelRatio(PR);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.AgXToneMapping;
   renderer.toneMappingExposure = 1.15;
   renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFShadowMap;
+  renderer.shadowMap.type = MOB ? THREE.BasicShadowMap : THREE.PCFShadowMap;
   renderer.localClippingEnabled = true;
   const cv = renderer.domElement;
   cv.className = 'cpw-gl-canvas';
@@ -417,7 +420,7 @@ ready(async () => {
   scene.add(new THREE.HemisphereLight(0xffffff, 0x20243a, 0.55));
   const key = new THREE.SpotLight(0xfff6ea, 26, 12, Math.PI / 6.5, 0.6, 1.6);
   key.position.set(1.6, 3.6, 3.2); key.target.position.set(0, top, 0); key.castShadow = true;
-  key.shadow.mapSize.set(1024, 1024); key.shadow.bias = -0.0004; key.shadow.normalBias = 0.02;
+  key.shadow.mapSize.set(MOB ? 512 : 1024, MOB ? 512 : 1024); key.shadow.bias = -0.0004; key.shadow.normalBias = 0.02;
   scene.add(key, key.target);
   const rim = new THREE.DirectionalLight(0xcfd8ff, 0.9); rim.position.set(-2.5, 1.6, -3); scene.add(rim);
   const fill = new THREE.DirectionalLight(0xffffff, 0.35); fill.position.set(-2, 0.6, 2.5); scene.add(fill);
@@ -437,18 +440,18 @@ ready(async () => {
     const vf = THREE.MathUtils.degToRad(camera.fov), hf = 2 * Math.atan(Math.tan(vf / 2) * camera.aspect);
     const needW = (R0 + 0.06) * 2, needH = (yMax - yMin) * 1.04;
     const d = Math.max((needW / 2) / Math.tan(hf / 2), (needH / 2) / Math.tan(vf / 2)) + R * 1.1;
-    camBase.d = d; camera.zoom = SR.width >= 992 ? 1.62 : 2.05; camera.position.copy(target).addScaledVector(dir, d); camera.lookAt(target);
+    camBase.d = d; camera.zoom = SR.width >= 992 ? 1.62 : 2.56; camera.position.copy(target).addScaledVector(dir, d); camera.lookAt(target);
     // frame box = stage width x (stage height * EXT), its top EXT above the stage; desktop: cake 20% right and 20% higher; phone: 1.27x bigger and 10% higher
     const fl = SR.left - HR.left, ft = (SR.top - HR.top) - (EXT - 1) * sh, desk = w >= 992;
-    camera.setViewOffset(w, h, -fl + (desk ? -0.2 * w : 0), -ft + (desk ? 0.2 * h : 0.1 * h), W, H);
+    camera.setViewOffset(w, h, -fl + (desk ? -0.2 * w : -0.08 * w), -ft + (desk ? 0.2 * h : 0.18 * h), W, H);
     camera.updateProjectionMatrix();
     scene.fog.near = d - R * 0.2; scene.fog.far = d + R * 2.6;
   }
   frame();
   { const ro = new ResizeObserver(frame); ro.observe(stage); ro.observe(hero); addEventListener('load', frame); if (document.fonts) document.fonts.ready.then(frame); setTimeout(frame, 1500); }
   hero.insertBefore(cv, hero.firstChild);
-  // fine film grain on top of the render, so it reads like a photograph rather than CGI
-  (() => {
+  // fine film grain on top of the render, so it reads like a photograph rather than CGI (desktop only: the blended layer is costly on phones)
+  if (!MOB) (() => {
     const c = document.createElement('canvas'); c.width = c.height = 160; const g = c.getContext('2d'); const im = g.createImageData(160, 160);
     for (let k = 0; k < im.data.length; k += 4) { const v = 110 + Math.random() * 145 | 0; im.data[k] = im.data[k + 1] = im.data[k + 2] = v; im.data[k + 3] = 255; }
     g.putImageData(im, 0, 0);
@@ -468,7 +471,7 @@ ready(async () => {
   const t0 = performance.now();
   const now = () => { const ms = anim && anim.currentTime != null ? Number(anim.currentTime) : performance.now() - t0; return ((ms / 1000) % LOOP + LOOP) % LOOP; };
 
-  let visible = true, raf = 0, shown = false, last = 0;
+  let visible = true, raf = 0, shown = false, last = 0, fc = 0, ft2 = 0;
   new IntersectionObserver(e => { visible = e[0].isIntersecting; if (visible && !raf) raf = requestAnimationFrame(loop); }, { rootMargin: '100px' }).observe(stage);
   document.addEventListener('visibilitychange', () => { if (!document.hidden && visible && !raf) raf = requestAnimationFrame(loop); });
 
@@ -514,6 +517,7 @@ ready(async () => {
       const upNow = 1 - hinges[b.i].rotation.x / (Math.PI * 0.5);
       b.mesh.material.opacity = (p < 0.18 ? p / 0.18 : p > 0.7 ? Math.max(0, (1 - p) / 0.3) : 1) * upNow;
     }
+    if (MOB && PR > 1) { fc++; ft2 += dt; if (fc === 90) { if (ft2 / fc > 0.021) { PR = 1; renderer.setPixelRatio(1); frame(); } fc = 0; ft2 = 0; } }
     renderer.render(scene, camera);
     if (!shown) { shown = true; requestAnimationFrame(() => { cv.style.opacity = '1'; stage.classList.add('cpw-gl'); stage.style.overflow = 'visible'; stage.style.contain = 'none'; }); }
     raf = requestAnimationFrame(loop);
