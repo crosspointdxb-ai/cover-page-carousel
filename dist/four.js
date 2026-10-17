@@ -10,7 +10,10 @@
   var mounts = document.querySelectorAll('.cpx[data-cpx]');
   if (!mounts.length) return;
   var IT = (document.documentElement.lang || 'en').slice(0, 2) === 'it';
-  var WA = '393278417970';
+  // market comes from the section itself (data-market="ae" on #budget-four), never from the slug
+  var AE = !!document.querySelector('#budget-four[data-market="ae"]');
+  var WA = AE ? '971524018887' : '393278417970';
+  var CUR = AE ? 'AED' : 'EUR';
   var RM = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   function el(tag, cls, html) { var e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; }
@@ -19,7 +22,7 @@
   // anonymous answers go to the Cover Page wedding endpoint (same one the villa finder uses), never personal data
   var API = 'https://cover-agent-wedding.coverpageagency.workers.dev' + (/\.webflow\.io$/.test(location.hostname) ? '/next' : '');
   function save(kind, data) { try { fetch(API + '/wedding/lead', { method: 'POST', keepalive: true, headers: { 'content-type': 'application/json' }, body: JSON.stringify({ kind: kind, lang: IT ? 'it' : 'en', page: location.pathname, data: data }) }); } catch (e) {} }
-  function eur(n) { return n.toLocaleString('en-US').replace(/,/g, IT ? '.' : ',') + ' EUR'; }
+  function eur(n) { return n.toLocaleString('en-US').replace(/,/g, IT ? '.' : ',') + ' ' + CUR; }
 
   var css = `
 /* these three cards now run on this script: anything else injected into them is hidden, the title stays */
@@ -256,6 +259,9 @@
     t1: 'Your', t2: 'WEDDING DREAM', t3: 'menu', guests: 'guests', empty: 'answer, and the menu writes itself', note: 'Note', done: 'Where do we send your quote?', em: 'Email', ph: 'Phone', need: 'We need your email and phone to send your quote.', sending: 'Sending', ok: 'Received. Your bespoke quote arrives within 24 hours.', ko: 'Sending failed, please try again in a moment.',
     msg: 'Hello Cover Page, here is our dream menu'
   };
+  if (AE) MENU.Q = IT ?
+    [['guests', 'Quanti ospiti?', 'num', '150', 1], ['where', 'Dove si sposa? Location o hotel', 'text', 'Spiaggia a Dubai, deserto, hotel', 1], ['date', 'Quando? Anche indicativo', 'text', 'Febbraio 2027', 0], ['style', 'Come volete il servizio?', 'chips', ['Servito', 'Buffet', 'Family style', 'Isole'], 0], ['aperitivo', 'Ricevimento', 'area', 'Mocktail, canapé, mezze', 0], ['antipasto', 'Antipasto', 'area', 'Hummus, fattoush, burrata', 0], ['primo', 'Primo', 'area', 'Riso allo zafferano, risotto, biryani', 0], ['secondo', 'Secondo', 'area', 'Agnello, branzino, filetto', 0], ['dolce', 'Dolce e torta', 'area', 'Torta nuziale, kunafa, mignon', 0], ['bar', 'Bevande', 'area', 'Mocktail, succhi freschi, vini e cocktail', 0], ['note', 'Esigenze particolari', 'area', 'Halal, vegetariani, allergie, bambini', 0]] :
+    [['guests', 'How many guests?', 'num', '150', 1], ['where', 'Where is the wedding? Location or hotel', 'text', 'Beach in Dubai, desert, hotel', 1], ['date', 'When? Even approximate', 'text', 'February 2027', 0], ['style', 'How do you want the service?', 'chips', ['Plated', 'Buffet', 'Family style', 'Food stations'], 0], ['aperitivo', 'Reception', 'area', 'Mocktails, canapes, mezze', 0], ['antipasto', 'Starter', 'area', 'Hummus, fattoush, burrata', 0], ['primo', 'First course', 'area', 'Saffron rice, risotto, biryani', 0], ['secondo', 'Main course', 'area', 'Lamb, sea bass, beef fillet', 0], ['dolce', 'Dessert and cake', 'area', 'Wedding cake, kunafa, petit fours', 0], ['bar', 'Drinks', 'area', 'Mocktails, fresh juices, wines and cocktails', 0], ['note', 'Special requirements', 'area', 'Halal, vegetarians, allergies, children', 0]];
   // a pen script for everything the couple writes
   (function () { if (document.getElementById('cpx-hand')) return; var l = el('link'); l.id = 'cpx-hand'; l.rel = 'stylesheet'; l.href = 'https://fonts.googleapis.com/css2?family=Homemade+Apple&display=swap'; document.head.appendChild(l); })();
   function menu(app, quote) {
@@ -275,7 +281,7 @@
       if (!em || !ph || !em.value.trim() || !ph.value.trim() || !em.checkValidity()) { err.textContent = MENU.need; (em && !em.value.trim() ? em : ph).focus(); return; }
       var form = document.getElementById('cpx-menu-form');
       save('menu', A);
-      if (!form) { err.textContent = MENU.ko; return; }
+      if (!form) { window.open(wa(MENU.msg + '\n' + em.value.trim() + ', ' + ph.value.trim() + '\n' + msgTxt), '_blank', 'noopener'); send.innerHTML = ''; stage.innerHTML = '<p class="cpx-qt">' + MENU.ok + '</p>'; return; }
       form.querySelector('[name=Email]').value = em.value.trim(); form.querySelector('[name=Phone]').value = ph.value.trim(); form.querySelector('[name=Menu]').value = msgTxt;
       go.disabled = true; go.textContent = MENU.sending; err.textContent = '';
       var wrap = form.closest('.w-form'), t0 = Date.now();
@@ -360,11 +366,29 @@
       { n: 'Custom build', p: 2500, on: [0, 1, 4, 5, 8, 9, 10, 11], d: 'Our highest package plus a custom build: more operators for photo, video and drone, more points of view, more depth in what you receive. A larger guest list needs more talents.' }
     ]
   };
+  if (AE) {
+    FILM.ph = IT ? 'Il tuo budget in dirham, es. 8000' : 'Your budget in dirhams, e.g. 8000';
+    FILM.below = IT ? 'Sotto i nostri pacchetti: il primo parte da 4.300 AED.' : 'Below our packages: the first one starts at 4,300 AED.';
+    FILM.link = IT ? '/it/wedding-packages' : '/wedding-packages';
+    FILM.items[3] = [IT ? 'Album da 50 foto' : '50 photo album'];
+    FILM.items[7] = [IT ? 'Giornata intera' : 'Full day coverage', 1];
+    FILM.pk = IT ? [
+      { n: 'Fotografia', p: 4300, on: [0, 1, 2, 3], d: '300 foto editate con color grading e ritocco, un album digitale di 50 foto, editoriale e narrativo.' },
+      { n: 'Videografia', p: 6500, on: [4, 5, 6], d: 'Un film del matrimonio sceneggiato con sound design e color grading, più un teaser.' },
+      { n: 'Foto e video', p: 8600, pop: 1, on: [0, 1, 4, 5, 7], d: 'Copertura di una giornata intera: 200 foto editate con color grading e ritocco, più un film del matrimonio sceneggiato con sound design.' },
+      { n: 'Su misura', p: 12000, on: [0, 1, 4, 5, 7, 9, 10, 11], d: 'Il nostro pacchetto più alto più un progetto su misura: più operatori, drone su richiesta, più punti di vista. Più invitati richiedono più talenti.' }
+    ] : [
+      { n: 'Photography', p: 4300, on: [0, 1, 2, 3], d: '300 edited photos, colour graded and retouched, one digital album of 50 photos, editorial and storytelling.' },
+      { n: 'Videography', p: 6500, on: [4, 5, 6], d: 'A scripted wedding film with sound design and colour grading, plus a wedding teaser.' },
+      { n: 'Photo and video', p: 8600, pop: 1, on: [0, 1, 4, 5, 7], d: 'Full day coverage: 200 edited photos, colour graded and retouched, plus a scripted wedding film with sound design.' },
+      { n: 'Custom build', p: 12000, on: [0, 1, 4, 5, 7, 9, 10, 11], d: 'Our highest package plus a custom build: more operators, drone on request, more points of view. A larger guest list needs more talents.' }
+    ];
+  }
   function film(app, quote) {
     var PK = FILM.pk;
     var f = el('form', 'cpx-bf'), lab = el('label', 'cpx-k', esc(FILM.k)), row = el('div', 'cpx-bfr'), inp = el('input', 'cpx-in cpx-bud'), btn = el('button', 'cpx-btn', esc(FILM.see));
     inp.type = 'number'; inp.min = 0; inp.step = 50; inp.inputMode = 'numeric'; inp.placeholder = FILM.ph; inp.setAttribute('aria-label', FILM.k); btn.type = 'submit';
-    row.append(el('span', 'cpx-eur', 'EUR'), inp, btn); f.append(lab, row); app.appendChild(f);
+    row.append(el('span', 'cpx-eur', CUR), inp, btn); f.append(lab, row); app.appendChild(f);
     var res = el('div', 'cpx-res'); res.hidden = true; app.appendChild(res);
     var pk = el('div', 'cpx-pk'), pn = el('p', 'cpx-pkn'), pp = el('span', 'cpx-pkp'), pd = el('p', 'cpx-pkd'); pk.append(pn, pp, pd); res.appendChild(pk);
     var sheet = el('div', 'cpx-sheet'); res.appendChild(sheet);
@@ -418,6 +442,7 @@
     m: [['15:30', 'Ceremony', ['Live musicians', 'Voice and strings', 'Harp']], ['17:00', 'Aperitivo', ['Roaming entertainment', 'Jazz trio', 'Saxophone']], ['19:30', 'Dinner', ['Live band', 'Piano', 'Singer']], ['22:00', 'First dance', ['Live band', 'Dancers', 'Light show']], ['22:30', 'Party', ['DJ', 'DJ and sax', 'LED show']], ['00:30', 'Late night', ['Fire show', 'Acrobats', 'Circus act']]],
     send: 'Get the proposal', msg: 'Hello Cover Page, here is our night'
   };
+  if (AE) NIGHT.m[1][1] = IT ? 'Ricevimento' : 'Reception';
   function night(app, quote) {
     var pick = NIGHT.m.map(function () { return null; });
     agent(app);
