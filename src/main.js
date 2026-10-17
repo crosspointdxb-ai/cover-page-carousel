@@ -47,6 +47,8 @@ ready(async () => {
     t: (li.querySelector('.cpw-ct') || {}).textContent || '',
     l: (li.querySelector('.cpw-cl') || {}).textContent || '',
     tasks: [...li.querySelectorAll('.cpw-bub li')].map(x => x.textContent.trim()).filter(Boolean),
+    // photo on the page (e.g. ..._wedding-planner-dubai-07-catering.webp): the same file is mirrored in the repo under dxb/
+    src: (li.querySelector('img') && li.querySelector('img').getAttribute('src')) || '',
   }));
   if (!cards.length) return;
 
@@ -356,13 +358,15 @@ ready(async () => {
       bubbles.push({ mesh, card, k, i, start: -k * 1.25 * mult, dur: (2.8 + ((i + k * 7) % 5) * 0.35) * mult, idx: (k * 3 + i) % Math.max(1, card.tasks.length), x: 0 });
     }
   });
+  cards.forEach(c => c.tasks.forEach((t, k) => { const v = bubble(t, (k % 3) === 2); renderer.initTexture && renderer.initTexture(v.t); }));
   cardMats.forEach(({ card, mat }) => {
-    loader.load(BASE + 'img/' + (card.i + 1) + '.webp', bmp => { const old = mat.map; mat.map = cardTexture(card, bmp); mat.needsUpdate = true; old && old.dispose(); }, undefined, () => {});
+    const fn = (card.src.match(/(wedding-planner-dubai-[\w-]+\.webp)/) || [])[1];
+    loader.load(fn ? BASE + 'dxb/' + fn : BASE + 'img/' + (card.i + 1) + '.webp', bmp => { const old = mat.map; mat.map = cardTexture(card, bmp); mat.needsUpdate = true; old && old.dispose(); }, undefined, () => {});
   });
 
   // the couple: porcelain cake toppers that rise through the top tier and get dressed
   const clip = new THREE.Plane(new THREE.Vector3(0, 1, 0), -topY + 0.001);
-  const pm = (c, extra) => new THREE.MeshPhysicalMaterial(Object.assign({ color: c, roughness: 0.45, sheen: 0.8, sheenColor: new THREE.Color(0xffffff), clearcoat: 0.35, clippingPlanes: [clip], clipShadows: true }, extra || {}));
+  const pm = (c, extra) => MOB ? new THREE.MeshStandardMaterial(Object.assign({ color: c, roughness: 0.45, clippingPlanes: [clip] }, extra || {})) : new THREE.MeshPhysicalMaterial(Object.assign({ color: c, roughness: 0.45, sheen: 0.8, sheenColor: new THREE.Color(0xffffff), clearcoat: 0.35, clippingPlanes: [clip], clipShadows: true }, extra || {}));
   const S = CH * 1.0;
   const V = (pts, sc) => pts.map(([r, y]) => new THREE.Vector2(r * S * sc, y * S));
   const couple = new THREE.Group(); scene.add(couple);
@@ -523,7 +527,7 @@ ready(async () => {
       if (p >= 1) { b.start = 0; p = 0; b.idx = (b.idx + 3) % Math.max(1, b.card.tasks.length); }
       const task = b.card.tasks[b.idx]; if (!task) continue;
       const bt = bubble(task, (b.idx % 3) === 2);
-      if (b.mesh.material.map !== bt.t) { b.mesh.material.map = bt.t; b.mesh.material.needsUpdate = true; b.x = (((b.idx * 53) % 40) / 100 - 0.2) * CW; }
+      if (b.mesh.material.map !== bt.t) { const had = !!b.mesh.material.map; b.mesh.material.map = bt.t; if (!had) b.mesh.material.needsUpdate = true; b.x = (((b.idx * 53) % 40) / 100 - 0.2) * CW; }
       const hgt = CW * 0.17; b.mesh.scale.set(hgt * bt.a, hgt, 1);
       b.mesh.position.x = b.x + Math.sin(p * 3.1 + b.k) * CW * 0.04;
       b.mesh.position.y = CH * 0.44 + p * CH * 0.3;
