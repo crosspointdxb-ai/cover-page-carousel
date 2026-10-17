@@ -404,7 +404,9 @@ ready(async () => {
   const tie = new THREE.Mesh(new THREE.BoxGeometry(0.05 * S, 0.018 * S, 0.012 * S), pm(0x0d0e12, { transparent: true, opacity: 0 })); tie.position.set(0, 0.812 * S, 0.068 * S); groom.add(tie);
   const flower = new THREE.Mesh(new THREE.SphereGeometry(0.013 * S, 12, 10), pm(0xffffff, { transparent: true, opacity: 0 })); flower.position.set(0.055 * S, 0.74 * S, 0.085 * S); groom.add(flower);
 
-  couple.position.y = topY; couple.scale.setScalar(0.75);
+  // phones: the couple stands 15% of its height higher, so it reads above the top tier
+  const LIFT = MOB ? 0.15 * 0.75 * 0.96 * S : 0;
+  couple.position.y = topY + LIFT; couple.scale.setScalar(0.75);
   const halo = new THREE.PointLight(0xfff8f0, 0.7, 1.4, 2); halo.position.set(0, topY + 0.38 * S, 0.3); scene.add(halo);
 
   // colours for the dressing transition
@@ -440,11 +442,22 @@ ready(async () => {
     const vf = THREE.MathUtils.degToRad(camera.fov), hf = 2 * Math.atan(Math.tan(vf / 2) * camera.aspect);
     const needW = (R0 + 0.06) * 2, needH = (yMax - yMin) * 1.04;
     const d = Math.max((needW / 2) / Math.tan(hf / 2), (needH / 2) / Math.tan(vf / 2)) + R * 1.1;
-    camBase.d = d; const TU = window.__cpwTune || {}; camera.zoom = SR.width >= 992 ? 1.62 : (TU.z || 3.72); camera.position.copy(target).addScaledVector(dir, d); camera.lookAt(target);
+    camBase.d = d; const TU = window.__cpwTune || {}; camera.zoom = SR.width >= 992 ? 1.62 : 1; camera.position.copy(target).addScaledVector(dir, d); camera.lookAt(target);
     // frame box = stage width x (stage height * EXT), its top EXT above the stage; desktop: cake 20% right and 20% higher; phone: 1.27x bigger and 10% higher
     const fl = SR.left - HR.left, ft = (SR.top - HR.top) - (EXT - 1) * sh, desk = w >= 992;
-    camera.setViewOffset(w, h, -fl + (desk ? -0.2 * w : (TU.x != null ? TU.x : -0.26) * w), -ft + (desk ? 0.2 * h : (TU.y != null ? TU.y : 0.03) * h), W, H);
-    camera.updateProjectionMatrix();
+    if (desk) { camera.setViewOffset(w, h, -fl - 0.2 * w, -ft + 0.2 * h, W, H); camera.updateProjectionMatrix(); }
+    else {
+      // phone: framing from measured screen positions (same result on every phone): the top of the cake at (ax, ay) of the hero,
+      // the bottom of the lower tier at by of the hero height (below 1 = cut by the hero edge), so the cake fills the lower two thirds
+      const ax = TU.ax != null ? TU.ax : 0.68, ay = TU.ay != null ? TU.ay : 0.36, span = (TU.by != null ? TU.by : 1.3) - ay;
+      const pA = new THREE.Vector3(0, topY, 0), pB = new THREE.Vector3(0, -top - 0.06 - H0, R0);
+      const scr = v => { const q = v.clone().project(camera); return [(q.x + 1) / 2 * W, (1 - q.y) / 2 * H]; };
+      camera.zoom = 1; camera.setViewOffset(w, h, -fl, -ft, W, H); camera.updateProjectionMatrix(); camera.updateMatrixWorld();
+      const z1 = scr(pB)[1] - scr(pA)[1];
+      camera.zoom = z1 > 0 ? span * H / z1 : 3; camera.updateProjectionMatrix();
+      const a2 = scr(pA);
+      camera.setViewOffset(w, h, -fl + (a2[0] - ax * W), -ft + (a2[1] - ay * H), W, H); camera.updateProjectionMatrix();
+    }
     scene.fog.near = d - R * 0.2; scene.fog.far = d + R * 2.6;
   }
   frame();
@@ -490,7 +503,7 @@ ready(async () => {
 
     // the couple rises through the top tier, then sinks before the loop restarts
     const rise = sstep(0.2, 3.4, t) * (1 - sstep(31.0, 32.8, t));
-    couple.position.y = topY - (1 - rise) * S * 1.05;
+    couple.position.y = topY + LIFT - (1 - rise) * S * 1.05;
     couple.rotation.y = cakeA + Math.sin(ms / 1000 * 0.6) * 0.2;
 
     // dressing: casual clothes turn into the wedding outfits
