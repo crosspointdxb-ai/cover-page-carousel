@@ -189,8 +189,8 @@
 .cpx-as{font-size:clamp(13px,.95vw,16px);line-height:1.5;color:var(--mut);margin:0 0 14px;max-width:56ch}
 .cpx-nk{margin-top:clamp(22px,2vw,34px)}
 @media (max-width:767px){
-#budget-four .cpb-img-1{height:112px!important;min-height:0!important;object-fit:cover}
-#budget-four .cpb-body-1{padding:16px!important}
+#budget-four .cpb-grid-1>article .cpb-img-1,#budget-four .cpb-img-1{height:112px!important;min-height:0!important;object-fit:cover}
+#budget-four .cpb-grid-1>article .cpb-body-1,#budget-four .cpb-body-1{padding:16px!important}
 #budget-four .cpb-t::before{margin-bottom:6px}
 .cpx{margin-top:10px}
 .cpx-app{margin-top:14px}
@@ -199,13 +199,13 @@
 .cpx-quote{padding:9px 14px;font-size:11px;margin-top:10px}
 /* location: villa finder compact */
 .cpw-tool .cpw-modes{margin-bottom:8px}.cpw-tool .cpw-modes button{padding:7px 10px!important;font-size:13px!important}
-.cpw-tool .cpw-cnt{margin:2px 0 6px}.cpw-tool .cpw-cnt b{font-size:22px!important}
+.cpw-tool .cpw-cnt,.cpw-tool .cpw-hint{display:none!important}.cpb-cardloc .cpx-lead{line-height:1.45}
 .cpw-tool .cpw-pill{padding:4px!important}
 .cpw-tool .cpw-pill button,.cpw-tool .cpw-go{background:transparent!important;color:#141311!important;box-shadow:inset 0 0 0 1px #141311!important;padding:9px 14px!important;font-size:10.5px!important}
 .cpw-tool .cpw-flt{margin-top:8px}.cpw-tool .cpw-lakes,.cpw-tool .cpw-rg{margin-bottom:4px!important}
 .cpw-tool .cpw-chip{padding:5px 10px!important;font-size:12px!important}
 .cpw-tool .cpw-mapw p{font-size:12px!important;margin:0 0 6px!important}
-.cpw-tool .cpw-map svg{max-height:170px;width:100%}
+.cpw-tool .cpw-map svg{max-height:150px;width:100%}.cpw-tool .cpw-map{padding:10px!important}
 /* catering: wizard and menu card in one screen */
 .cpx-wz{min-height:0}
 .cpx-dots{margin-bottom:12px}.cpx-qn{margin-bottom:6px}
@@ -231,10 +231,10 @@
 .cpx-n::-webkit-scrollbar{display:none}
 .cpx-n::before{left:0!important;right:0!important;top:15px!important;bottom:auto!important;width:auto!important;height:1px!important}
 .cpx-nl{left:0!important;top:15px!important;height:1px!important;width:var(--w,0%)!important}
-.cpx-mo{flex:0 0 58%;scroll-snap-align:start;padding:0 6px 0 0!important}
+.cpx-mo{flex:0 0 66%;scroll-snap-align:start;padding:0 6px 0 0!important}
 .cpx-mo .cpx-dot{position:relative!important;left:auto!important;top:auto!important}
 .cpx-mn{font-size:18px;margin:10px 0 8px}
-.cpx-mo .cpx-chip{font-size:12px;padding:6px 10px}
+.cpx-mo .cpx-chip{font-size:12px;padding:6px 10px;white-space:normal}
 .cpx-pick{font-size:20px;min-height:20px;margin-top:6px}
 .cpx-agent{padding:16px}
 .cpx-at1{font-size:24px}.cpx-at2{font-size:30px}
