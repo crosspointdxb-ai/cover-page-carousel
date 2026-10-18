@@ -409,7 +409,7 @@ ready(async () => {
   const flower = new THREE.Mesh(new THREE.SphereGeometry(0.013 * S, 12, 10), pm(0xffffff, { transparent: true, opacity: 0 })); flower.position.set(0.055 * S, 0.74 * S, 0.085 * S); groom.add(flower);
 
   // phones: the couple stands 15% of its height higher, so it reads above the top tier
-  const LIFT = MOB ? 0.15 * 0.75 * 0.96 * S : 0;
+  let LIFT = 0; // set in frame(): phones only (hero 767px or less, same breakpoint as the page CSS)
   couple.position.y = topY + LIFT; couple.scale.setScalar(0.75);
   const halo = new THREE.PointLight(0xfff8f0, 0.7, 1.4, 2); halo.position.set(0, topY + 0.38 * S, 0.3); scene.add(halo);
 
@@ -446,10 +446,16 @@ ready(async () => {
     const vf = THREE.MathUtils.degToRad(camera.fov), hf = 2 * Math.atan(Math.tan(vf / 2) * camera.aspect);
     const needW = (R0 + 0.06) * 2, needH = (yMax - yMin) * 1.04;
     const d = Math.max((needW / 2) / Math.tan(hf / 2), (needH / 2) / Math.tan(vf / 2)) + R * 1.1;
-    camBase.d = d; const TU = window.__cpwTune || {}; camera.zoom = SR.width >= 992 ? 1.62 : 1; camera.position.copy(target).addScaledVector(dir, d); camera.lookAt(target);
+    camBase.d = d; const TU = window.__cpwTune || {}; camera.zoom = SR.width > 767 ? 1.62 : 1; camera.position.copy(target).addScaledVector(dir, d); camera.lookAt(target);
     // frame box = stage width x (stage height * EXT), its top EXT above the stage; desktop: cake 20% right and 20% higher; phone: 1.27x bigger and 10% higher
-    const fl = SR.left - HR.left, ft = (SR.top - HR.top) - (EXT - 1) * sh, desk = w >= 992;
-    if (desk) { camera.setViewOffset(w, h, -fl - 0.2 * w, -ft + 0.2 * h, W, H); camera.updateProjectionMatrix(); }
+    const fl = SR.left - HR.left, ft = (SR.top - HR.top) - (EXT - 1) * sh, desk = w > 767;
+    if (desk) {
+      camera.setViewOffset(w, h, -fl - 0.2 * w, -ft + 0.2 * h, W, H); camera.updateProjectionMatrix(); camera.updateMatrixWorld(); LIFT = 0;
+      // desktop and tablet: the couple keeps its place on the cake but shrinks until the whole couple sits inside the hero (6% margin at the top)
+      const py = v => (1 - v.clone().project(camera).y) / 2 * H;
+      const feet = py(new THREE.Vector3(0, topY, 0)), head = py(new THREE.Vector3(0, topY + 1.0 * S * 0.75, 0)), room = feet - 0.06 * H;
+      couple.scale.setScalar(feet > head ? Math.max(0.3, Math.min(0.75, 0.75 * room / (feet - head))) : 0.75);
+    }
     else {
       // phone: framing from measured screen positions (same result on every phone): the top of the cake at (ax, ay) of the hero,
       // the bottom of the lower tier at by of the hero height (below 1 = cut by the hero edge), so the cake fills the lower two thirds
@@ -461,6 +467,7 @@ ready(async () => {
       camera.zoom = z1 > 0 ? span * H / z1 : 3; camera.updateProjectionMatrix();
       const a2 = scr(pA);
       camera.setViewOffset(w, h, -fl + (a2[0] - ax * W), -ft + (a2[1] - ay * H), W, H); camera.updateProjectionMatrix();
+      LIFT = 0.15 * 0.75 * 0.96 * S; couple.scale.setScalar(0.75);
     }
     scene.fog.near = d - R * 0.2; scene.fog.far = d + R * 2.6;
   }
