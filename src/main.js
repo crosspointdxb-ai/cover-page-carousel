@@ -348,7 +348,8 @@ ready(async () => {
     const phi = i / cards.length * Math.PI * 2;
     const g = new THREE.Group(); g.position.set(Math.sin(phi) * R, -top, Math.cos(phi) * R); g.rotation.y = phi; ring.add(g);
     const hinge = new THREE.Group(); g.add(hinge); hinges.push(hinge);
-    const mat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.55, transparent: true, alphaTest: 0.5, map: cardTexture(card, null) });
+    // phones: unlit cards so the photos keep their full colour (lit cards read washed out without the shadow pass)
+    const mat = MOB ? new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, alphaTest: 0.5, toneMapped: false, fog: false, map: cardTexture(card, null) }) : new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.55, transparent: true, alphaTest: 0.5, map: cardTexture(card, null) });
     const m = new THREE.Mesh(geoCard, mat); m.castShadow = true; hinge.add(m); cardMats.push({ card, mat });
     const b = new THREE.Mesh(geoCard, backMat); b.rotation.y = Math.PI; b.position.z = -0.002; hinge.add(b);
     const mult = 0.85 + ((i * 37) % 45) / 100;
