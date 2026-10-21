@@ -109,7 +109,7 @@ ready(async () => {
   const camera = new THREE.PerspectiveCamera(28, 2, 0.1, 30);
 
   const R = 1, CW = 2 * Math.PI * R / cards.length * 0.86, CH = CW * 1.6, top = CH / 2;
-  const loader = new THREE.ImageBitmapLoader(); loader.setOptions({ imageOrientation: 'none' });
+  const loader = new THREE.ImageBitmapLoader(); loader.setOptions({ imageOrientation: 'from-image' });
 
   // sugar paste / marble surface
   function paste(size, seed, veins) {

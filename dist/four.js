@@ -12,13 +12,16 @@
   var IT = (document.documentElement.lang || 'en').slice(0, 2) === 'it';
   // market comes from the section itself (data-market="ae" on #budget-four), never from the slug
   var AE = !!document.querySelector('#budget-four[data-market="ae"]');
-  var WA = AE ? '971524018887' : '393278417970';
+  // Dubai English pages answer from Dubai; Italian pages (and Milan) answer from the Italian number
+  var WA = AE && !IT ? '971524018887' : '393278417970';
   var CUR = AE ? 'AED' : 'EUR';
   var RM = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   function el(tag, cls, html) { var e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; }
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
   function wa(text) { return 'https://wa.me/' + WA + '?text=' + encodeURIComponent(text); }
+  // open WhatsApp through a real link click, so the site lead tracking (cpa_lead) and the page reference see it
+  function waOpen(u, id) { var a = document.createElement('a'); a.href = u; a.target = '_blank'; a.rel = 'noopener'; a.id = id; a.style.display = 'none'; document.body.appendChild(a); a.click(); a.remove(); }
   // anonymous answers go to the Cover Page wedding endpoint (same one the villa finder uses), never personal data
   var API = 'https://cover-agent-wedding.coverpageagency.workers.dev' + (/\.webflow\.io$/.test(location.hostname) ? '/next' : '');
   function save(kind, data) { try { fetch(API + '/wedding/lead', { method: 'POST', keepalive: true, headers: { 'content-type': 'application/json' }, body: JSON.stringify({ kind: kind, lang: IT ? 'it' : 'en', page: location.pathname, data: data }) }); } catch (e) {} }
@@ -288,7 +291,7 @@
       if (!em || !ph || !em.value.trim() || !ph.value.trim() || !em.checkValidity()) { err.textContent = MENU.need; (em && !em.value.trim() ? em : ph).focus(); return; }
       var form = document.getElementById('cpx-menu-form');
       save('menu', A);
-      if (!form) { window.open(wa(MENU.msg + '\n' + em.value.trim() + ', ' + ph.value.trim() + '\n' + msgTxt), '_blank', 'noopener'); send.innerHTML = ''; stage.innerHTML = '<p class="cpx-qt">' + MENU.ok + '</p>'; return; }
+      if (!form) { waOpen(wa(MENU.msg + '\n' + em.value.trim() + ', ' + ph.value.trim() + '\n' + msgTxt), 'wa-menu'); send.innerHTML = ''; stage.innerHTML = '<p class="cpx-qt">' + MENU.ok + '</p>'; return; }
       form.querySelector('[name=Email]').value = em.value.trim(); form.querySelector('[name=Phone]').value = ph.value.trim(); form.querySelector('[name=Menu]').value = msgTxt;
       go.disabled = true; go.textContent = MENU.sending; err.textContent = '';
       var wrap = form.closest('.w-form'), t0 = Date.now();
@@ -404,7 +407,7 @@
       var fr = el('div', 'cpx-fr' + (it[1] ? ' mv' : '')), im = el('img'); im.alt = ''; im.loading = 'lazy'; im.decoding = 'async'; im.src = BASE + 'wed/' + (k + 1) + '.webp';
       fr.append(im, el('b', 'cpx-cap', esc(it[0]))); sheet.appendChild(fr); return fr;
     });
-    var sendRow = el('div', 'cpx-send'), go = el('a', 'cpx-btn', esc(FILM.send)); go.href = 'https://wa.me/971524018887'; var chg = el('button', 'cpx-btn cpx-ghost', esc(FILM.change)), more = el('a', 'cpx-more', esc(FILM.more));
+    var sendRow = el('div', 'cpx-send'), go = el('a', 'cpx-btn', esc(FILM.send)); go.href = 'https://wa.me/' + WA; go.id = 'wa-film'; var chg = el('button', 'cpx-btn cpx-ghost', esc(FILM.change)), more = el('a', 'cpx-more', esc(FILM.more));
     go.target = '_blank'; go.rel = 'noopener'; more.href = FILM.link; chg.type = 'button';
     sendRow.append(go, chg); if (quote) sendRow.appendChild(quote); sendRow.appendChild(more); res.appendChild(sendRow);
     function tier(b) { var t = -1; for (var k = 0; k < PK.length; k++) if (b >= PK[k].p) t = k; return t; }
@@ -462,7 +465,7 @@
       var ch = el('div', 'cpx-chips'); m[2].forEach(function (a) { var b = el('button', 'cpx-chip', esc(a)); b.type = 'button'; b.onclick = function () { pick[i] = pick[i] === a ? null : a; draw(i); }; ch.appendChild(b); });
       c.appendChild(ch); var pk = el('p', 'cpx-pick'); c.appendChild(pk); tl.appendChild(c); return { c: c, ch: ch, pk: pk };
     });
-    var send = el('div', 'cpx-send'), go = el('a', 'cpx-btn', esc(NIGHT.send)); go.href = 'https://wa.me/971524018887'; go.target = '_blank'; go.rel = 'noopener';
+    var send = el('div', 'cpx-send'), go = el('a', 'cpx-btn', esc(NIGHT.send)); go.href = 'https://wa.me/' + WA; go.id = 'wa-night'; go.target = '_blank'; go.rel = 'noopener';
     send.appendChild(go); if (quote) send.appendChild(quote); app.appendChild(send);
     function draw(fresh) {
       var lastOn = -1;
