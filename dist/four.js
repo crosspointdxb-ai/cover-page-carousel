@@ -404,7 +404,7 @@
       var fr = el('div', 'cpx-fr' + (it[1] ? ' mv' : '')), im = el('img'); im.alt = ''; im.loading = 'lazy'; im.decoding = 'async'; im.src = BASE + 'wed/' + (k + 1) + '.webp';
       fr.append(im, el('b', 'cpx-cap', esc(it[0]))); sheet.appendChild(fr); return fr;
     });
-    var sendRow = el('div', 'cpx-send'), go = el('a', 'cpx-btn', esc(FILM.send)), chg = el('button', 'cpx-btn cpx-ghost', esc(FILM.change)), more = el('a', 'cpx-more', esc(FILM.more));
+    var sendRow = el('div', 'cpx-send'), go = el('a', 'cpx-btn', esc(FILM.send)); go.href = 'https://wa.me/971524018887'; var chg = el('button', 'cpx-btn cpx-ghost', esc(FILM.change)), more = el('a', 'cpx-more', esc(FILM.more));
     go.target = '_blank'; go.rel = 'noopener'; more.href = FILM.link; chg.type = 'button';
     sendRow.append(go, chg); if (quote) sendRow.appendChild(quote); sendRow.appendChild(more); res.appendChild(sendRow);
     function tier(b) { var t = -1; for (var k = 0; k < PK.length; k++) if (b >= PK[k].p) t = k; return t; }
@@ -462,7 +462,7 @@
       var ch = el('div', 'cpx-chips'); m[2].forEach(function (a) { var b = el('button', 'cpx-chip', esc(a)); b.type = 'button'; b.onclick = function () { pick[i] = pick[i] === a ? null : a; draw(i); }; ch.appendChild(b); });
       c.appendChild(ch); var pk = el('p', 'cpx-pick'); c.appendChild(pk); tl.appendChild(c); return { c: c, ch: ch, pk: pk };
     });
-    var send = el('div', 'cpx-send'), go = el('a', 'cpx-btn', esc(NIGHT.send)); go.target = '_blank'; go.rel = 'noopener';
+    var send = el('div', 'cpx-send'), go = el('a', 'cpx-btn', esc(NIGHT.send)); go.href = 'https://wa.me/971524018887'; go.target = '_blank'; go.rel = 'noopener';
     send.appendChild(go); if (quote) send.appendChild(quote); app.appendChild(send);
     function draw(fresh) {
       var lastOn = -1;

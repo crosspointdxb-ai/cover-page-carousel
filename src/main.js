@@ -58,7 +58,7 @@ ready(async () => {
   // phones: lighter render (no MSAA, lower pixel ratio, cheaper shadows, no grain) so the motion stays smooth
   const MOB = innerWidth < 992 || matchMedia('(pointer: coarse)').matches;
   const renderer = new THREE.WebGLRenderer({ antialias: !MOB, alpha: true, powerPreference: 'high-performance' });
-  let PR = Math.min(devicePixelRatio || 1, MOB ? 2 : 1.75);
+  let PR = Math.min(devicePixelRatio || 1, MOB ? 1.5 : 1.75);
   renderer.setPixelRatio(PR);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.AgXToneMapping;
@@ -359,7 +359,8 @@ ready(async () => {
       bubbles.push({ mesh, card, k, i, start: -k * 1.25 * mult, dur: (2.8 + ((i + k * 7) % 5) * 0.35) * mult, idx: (k * 3 + i) % Math.max(1, card.tasks.length), x: 0 });
     }
   });
-  cards.forEach(c => c.tasks.forEach((t, k) => { const v = bubble(t, (k % 3) === 2); renderer.initTexture && renderer.initTexture(v.t); }));
+  // phones: bubble textures are made on demand, not all upfront (saves main thread time on load)
+  if (!MOB) cards.forEach(c => c.tasks.forEach((t, k) => { const v = bubble(t, (k % 3) === 2); renderer.initTexture && renderer.initTexture(v.t); }));
   cardMats.forEach(({ card, mat }) => {
     const fn = (card.src.match(/(wedding-planner-dubai-[\w-]+\.webp)/) || [])[1];
     loader.load(fn ? BASE + 'dxb/' + fn : BASE + 'img/' + (card.i + 1) + '.webp', bmp => { const old = mat.map; mat.map = cardTexture(card, bmp); mat.needsUpdate = true; old && old.dispose(); }, undefined, () => {});
