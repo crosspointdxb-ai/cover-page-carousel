@@ -506,9 +506,9 @@ ready(async () => {
     { const k = ms / 1000, ox = Math.sin(k * 0.21) * 0.035 + Math.sin(k * 0.53) * 0.008, oy = Math.sin(k * 0.17 + 1) * 0.02; camera.position.set(target.x + Math.sin(ox) * camBase.d * dir.z, target.y + dir.y * camBase.d + oy, target.z + Math.cos(ox) * camBase.d * dir.z); camera.lookAt(target.x, target.y + oy * 0.4, target.z); }
     const cakeA = ms / 1000 * 0.07; cake.rotation.y = cakeA; wedBand.rotation.y = cakeA;
 
-    // cards flip up at the start, fold down at the very end so the loop closes
+    // cards always up
     hinges.forEach((h, i) => {
-      const up = sstep(0.4 + i * 0.11, 1.4 + i * 0.11, t) * (1 - sstep(30.4 + i * 0.1, 31.2 + i * 0.1, t));
+      const up = 1; // cards stay on the cake, no flip or fold (client 21 Oct 2026)
       h.rotation.x = (1 - up) * Math.PI * 0.5;
     });
 

@@ -248,7 +248,8 @@
 .cpx .cpx-at{margin:0 0 clamp(22px,1.9vw,32px)}.cpx .cpx-at2{font-size:clamp(26px,2.2vw,40px)}
 .cpx .cpx-ttl3{margin:4px 0 clamp(26px,2.2vw,38px)}.cpx .cpx-ttl3 .cpx-s1{font-size:clamp(24px,2vw,36px)}
 @media (max-width:767px){.cpx .cpx-at{margin-bottom:22px}.cpx .cpx-at2{font-size:24px}.cpx .cpx-ttl3{margin:0 0 22px}.cpx .cpx-ttl3 .cpx-s1{font-size:19px}
-.cpx .cpx-agent .cpx-as{margin-bottom:18px}.cpx .cpx-agent.cpx-idle #cpa-as{margin-bottom:0!important}.cpx .cpx-agent.cpx-idle #cpa-as .st{display:none!important}}
+.cpx .cpx-agent .cpx-as{margin-bottom:30px}.cpx .cpx-agent.cpx-idle #cpa-as{margin-bottom:0!important}.cpx .cpx-agent.cpx-idle #cpa-as .st{display:none!important}}
+.cpx .cpx-agent .cpx-as{margin-bottom:clamp(28px,2.4vw,44px)}.cpx .cpx-agent.cpx-idle #cpa-as{margin-bottom:0!important}.cpx .cpx-agent.cpx-idle #cpa-as .st{display:none!important}
 @media (prefers-reduced-motion:reduce){.cpx *,.cpx *::before,.cpx *::after{animation:none!important;transition:none!important}}
 `;
   var st = el('style'); st.id = 'cpx-css'; st.textContent = css; document.head.appendChild(st);
