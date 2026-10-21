@@ -37,9 +37,19 @@ function ready(fn) { document.readyState === 'loading' ? document.addEventListen
 ready(async () => {
   const stage = document.querySelector('.cpw-stage');
   if (!stage) return;
-  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const still = () => { stage.classList.add('cpw-nogl'); };
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return still();
+  // No real graphics chip (software rendering): keep the still hero, the 3D cake would block the page.
   const test = document.createElement('canvas');
-  if (!(test.getContext('webgl2') || test.getContext('webgl'))) return;
+  const opt = { failIfMajorPerformanceCaveat: true };
+  const tgl = test.getContext('webgl2', opt) || test.getContext('webgl', opt);
+  if (!tgl) return still();
+  try {
+    const dbg = tgl.getExtension('WEBGL_debug_renderer_info');
+    const rend = dbg ? String(tgl.getParameter(dbg.UNMASKED_RENDERER_WEBGL) || '') : '';
+    if (/swiftshader|llvmpipe|softpipe|software|basic render/i.test(rend)) return still();
+    const lose = tgl.getExtension('WEBGL_lose_context'); if (lose) lose.loseContext();
+  } catch (e) {}
 
   const cards = [...stage.querySelectorAll('.cpw-card')].map((li, i) => ({
     i,
