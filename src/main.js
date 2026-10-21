@@ -98,8 +98,8 @@ ready(async () => {
     g.fillStyle = m; g.fillRect(0, 0, W, H);
     const v = g.createLinearGradient(0, 0, 0, H); v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(0.42, 'rgba(0,0,0,1)'); v.addColorStop(0.9, 'rgba(0,0,0,1)'); v.addColorStop(1, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(0,0,0,1)');
     g.fillStyle = v; g.fillRect(0, 0, W, H);
-    cv.style.backgroundImage = `url(${c.toDataURL('image/png')})`;
-    cv.style.backgroundSize = 'cover'; cv.style.backgroundPosition = 'center';
+    // the backdrop is its own 2D canvas behind the WebGL canvas: a canvas is not an LCP candidate, so the hero text stays the LCP element
+    c.className = 'cpw-gl-bg'; c.setAttribute('aria-hidden', 'true'); Object.assign(c.style, { position: 'absolute', left: '0', top: '0', width: '100%', height: '100%', objectFit: 'cover', pointerEvents: 'none', zIndex: '0', opacity: '0', transition: 'opacity 1.2s ease' }); cv.__bg = c;
   })();
   const scene = new THREE.Scene();
   scene.fog = new THREE.Fog(0x1e140d, 3.2, 6.4);
@@ -475,7 +475,7 @@ ready(async () => {
   }
   frame();
   { const ro = new ResizeObserver(frame); ro.observe(stage); ro.observe(hero); addEventListener('load', frame); if (document.fonts) document.fonts.ready.then(frame); setTimeout(frame, 1500); }
-  hero.insertBefore(cv, hero.firstChild);
+  hero.insertBefore(cv, hero.firstChild); if (cv.__bg) hero.insertBefore(cv.__bg, cv);
   // fine film grain on top of the render, so it reads like a photograph rather than CGI (desktop only: the blended layer is costly on phones)
   if (!MOB) (() => {
     const c = document.createElement('canvas'); c.width = c.height = 160; const g = c.getContext('2d'); const im = g.createImageData(160, 160);
@@ -545,7 +545,7 @@ ready(async () => {
     }
     if (MOB && PR > 1.5) { fc++; ft2 += dt; if (fc === 90) { if (ft2 / fc > 0.021) { PR = 1.5; renderer.setPixelRatio(1.5); frame(); } fc = 0; ft2 = 0; } }
     renderer.render(scene, camera);
-    if (!shown) { shown = true; requestAnimationFrame(() => { cv.style.opacity = '1'; stage.classList.add('cpw-gl'); stage.style.overflow = 'visible'; stage.style.contain = 'none'; }); }
+    if (!shown) { shown = true; requestAnimationFrame(() => { cv.style.opacity = '1'; if (cv.__bg) cv.__bg.style.opacity = '1'; stage.classList.add('cpw-gl'); stage.style.overflow = 'visible'; stage.style.contain = 'none'; }); }
     raf = requestAnimationFrame(loop);
   }
   raf = requestAnimationFrame(loop);
