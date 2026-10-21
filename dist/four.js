@@ -243,6 +243,12 @@
 .cpx-at1{font-size:24px}.cpx-at2{font-size:30px}
 .cpx-as{font-size:12.5px}
 }
+.cpx .cpx-at,.cpx .cpx-ttl3{position:relative;display:inline-block;line-height:1}
+.cpx .cpx-at2,.cpx .cpx-ttl3 .cpx-s1{position:absolute;left:100%;top:0;transform:translate(-100%,.7em);white-space:nowrap;text-align:right;line-height:.66em}
+.cpx .cpx-at{margin:0 0 clamp(22px,1.9vw,32px)}.cpx .cpx-at2{font-size:clamp(26px,2.2vw,40px)}
+.cpx .cpx-ttl3{margin:4px 0 clamp(26px,2.2vw,38px)}.cpx .cpx-ttl3 .cpx-s1{font-size:clamp(24px,2vw,36px)}
+@media (max-width:767px){.cpx .cpx-at{margin-bottom:22px}.cpx .cpx-at2{font-size:24px}.cpx .cpx-ttl3{margin:0 0 22px}.cpx .cpx-ttl3 .cpx-s1{font-size:19px}
+.cpx .cpx-agent .cpx-as{margin-bottom:18px}.cpx .cpx-agent.cpx-idle #cpa-as{margin-bottom:0!important}.cpx .cpx-agent.cpx-idle #cpa-as .st{display:none!important}}
 @media (prefers-reduced-motion:reduce){.cpx *,.cpx *::before,.cpx *::after{animation:none!important;transition:none!important}}
 `;
   var st = el('style'); st.id = 'cpx-css'; st.textContent = css; document.head.appendChild(st);
@@ -329,7 +335,8 @@
     function draw() {
       var meta = [];
       if (A.guests) meta.push(A.guests + ' ' + MENU.guests); if (A.where) meta.push(A.where); if (A.date) meta.push(A.date); if (A.style) meta.push(A.style);
-      var h = '<p class="cpx-ttl3"><span class="cpx-s1">' + MENU.t1 + '</span> <span class="cpx-s2">' + MENU.t2 + '</span> <span class="cpx-s1">' + MENU.t3 + '</span></p>';
+      var sc = MENU.t1 + ' ' + MENU.t3; sc = sc.charAt(0).toLowerCase() + sc.slice(1);
+      var h = '<p class="cpx-ttl3"><span class="cpx-s2">' + MENU.t2 + '</span> <span class="cpx-s1">' + sc + '</span></p>';
       h += '<p class="cpx-pg">' + meta.map(function (m) { return hw(m, 'm' + m); }).join('<i> · </i>') + '</p>';
       var any = false;
       Q.slice(4, 10).forEach(function (q) {
