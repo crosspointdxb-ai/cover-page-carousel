@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cover Page Motion</title>
+<style>
+:root{--ink:#141414;--paper:#f6f4ef;--mute:#6f6a60;--line:rgba(0,0,0,.12)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--ink:#f2efe8;--paper:#101010;--mute:#a19b90;--line:rgba(255,255,255,.14)}}
+:root[data-theme="dark"]{--ink:#f2efe8;--paper:#101010;--mute:#a19b90;--line:rgba(255,255,255,.14)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:400 15px/1.55 Inter,system-ui,-apple-system,sans-serif}
+header{padding:clamp(28px,6vw,72px) 5vw 18px}
+h1{font:500 clamp(30px,5.4vw,76px)/1.02 Georgia,'Times New Roman',serif;margin:0 0 12px;letter-spacing:-.01em}
+header p{max-width:720px;color:var(--mute);margin:0}
+section{padding:22px 5vw 46px}
+.lab{display:flex;justify-content:space-between;align-items:baseline;gap:16px;border-top:1px solid var(--line);padding-top:12px;margin-bottom:14px}
+.lab b{font:600 11px/1 Inter,system-ui,sans-serif;letter-spacing:.28em;text-transform:uppercase}
+.lab span{color:var(--mute);font-size:13px}
+.stage{width:100%;height:min(78vh,860px);border-radius:6px;background:#0b0e1a}
+.stage.light{background:#ece9e3}
+@media (max-width:767px){header,section{padding-left:16px;padding-right:16px}.stage{height:auto;aspect-ratio:4/5}}
+</style>
+</head>
+<body>
+<header>
+<h1>Cover Page Motion</h1>
+<p>Four moving pieces with their own sound, built for coverpageagency.com. Each one starts only when you scroll to it, pauses when it leaves the screen, and plays sound only after you tap the Sound button.</p>
+</header>
+
+<section>
+<div class="lab"><b>01 Spacetime tunnel</b><span>Our wedding film, sliced through time</span></div>
+<div class="stage" data-cpm="spacetime" data-mode="tunnel" data-clip="clips/cloister"></div>
+</section>
+
+<section>
+<div class="lab"><b>02 Spacetime echo</b><span>Every gesture leaves a trail</span></div>
+<div class="stage light" data-cpm="spacetime" data-mode="echo" data-clip="clips/petals"></div>
+</section>
+
+<section>
+<div class="lab"><b>03 Event constellation</b><span>How a Cover Page wedding takes shape</span></div>
+<div class="stage" data-cpm="constellation"></div>
+</section>
+
+<section>
+<div class="lab"><b>04 Ink</b><span>A particle swarm that breathes with its sound</span></div>
+<div class="stage light" data-cpm="ink"></div>
+</section>
+
+<script src="cpm.js" defer></script>
+</body>
+</html>
