@@ -104,14 +104,14 @@
   var css = '.cpm{position:relative;overflow:hidden;contain:layout paint;isolation:isolate;-webkit-tap-highlight-color:transparent}' +
     '.cpm>canvas{position:absolute;inset:0;width:100%;height:100%;display:block}' +
     '.cpm-poster{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:opacity .8s}' +
-    '.cpm-ctl{position:absolute;right:14px;bottom:14px;z-index:5;display:flex;gap:8px}' +
-    '.cpm-ctl button{display:inline-flex;align-items:center;gap:8px;height:34px;padding:0 14px 0 11px;border-radius:999px;border:1px solid currentColor;font:600 10px/1 Inter,system-ui,sans-serif;letter-spacing:.22em;text-transform:uppercase;cursor:pointer}' +
-    '.cpm-ctl button:focus-visible{outline:2px solid currentColor;outline-offset:2px}.cpm-ctl svg{width:15px;height:15px}' +
+    '.cpm-br{position:absolute;right:16px;bottom:14px;z-index:5;display:flex;flex-direction:column;align-items:flex-end;gap:10px;pointer-events:none}' +
+    '.cpm-ctl{position:absolute;right:16px;bottom:14px;z-index:5;display:flex;gap:6px}.cpm-br .cpm-ctl{position:static;pointer-events:auto}' +
+    '.cpm-ctl button{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;padding:0;border-radius:50%;border:1px solid currentColor;cursor:pointer;opacity:.85;transition:opacity .3s}.cpm-ctl button:hover{opacity:1}' +
+    '.cpm-ctl button:focus-visible{outline:2px solid currentColor;outline-offset:2px;opacity:1}.cpm-ctl svg{width:13px;height:13px}' +
     '.cpm-snd .w{transition:opacity .3s;opacity:0}.cpm-snd[aria-pressed=true] .w{opacity:1}.cpm-snd[aria-pressed=true] .x{opacity:0}' +
-    '.cpm-logo{position:absolute;left:14px;top:14px;z-index:4;width:clamp(44px,5vw,76px);height:auto;pointer-events:none}' +
-    '.cpm-brand{position:absolute;right:14px;bottom:62px;z-index:4;font:600 10px/1 Inter,system-ui,sans-serif;letter-spacing:.3em;text-transform:uppercase;pointer-events:none}.cpm-brand.lo{bottom:14px}' +
-    '@media (max-width:600px){.cpm-logo{left:10px;top:10px}.cpm-brand{right:10px;bottom:52px;font-size:9px}.cpm-brand.lo{bottom:10px}' +
-    '.cpm-ctl{right:10px;bottom:10px;gap:6px}.cpm-ctl button{height:30px;padding:0 12px 0 9px}}';
+    '.cpm-logo{position:absolute;left:16px;top:14px;z-index:4;width:clamp(44px,5vw,76px);height:auto;pointer-events:none}' +
+    '.cpm-brand{font:600 clamp(13px,1.5vw,22px)/1 Inter,system-ui,sans-serif;letter-spacing:.28em;margin-right:-.28em;text-transform:uppercase;text-shadow:0 1px 10px rgba(0,0,0,.25)}' +
+    '@media (max-width:600px){.cpm-logo{left:12px;top:12px}.cpm-br{right:12px;bottom:12px;gap:8px}.cpm-ctl{right:12px;bottom:12px}.cpm-ctl button{width:26px;height:26px}.cpm-brand{font-size:12px}}';
   function injectCss() {
     if (document.getElementById('cpm-css')) return;
     var st = document.createElement('style'); st.id = 'cpm-css'; st.textContent = css; document.head.appendChild(st);
@@ -238,11 +238,16 @@
     img.className = 'cpm-logo'; img.alt = 'Cover Page Agency'; img.onerror = function () { img.remove(); }; img.decoding = 'async'; img.loading = 'lazy';
     img.src = el.getAttribute('data-logo') || LOGO;
     if (light) img.style.filter = 'invert(1)';
+    var br = document.createElement('div');
+    br.className = 'cpm-br';
+    var ctl = el.querySelector('.cpm-ctl');
+    if (ctl) br.appendChild(ctl);
     var t = document.createElement('span');
-    t.className = 'cpm-brand' + (el.querySelector('.cpm-ctl') ? '' : ' lo');
+    t.className = 'cpm-brand';
     t.textContent = 'Cover Page Agency';
     t.style.color = col.c;
-    el.appendChild(img); el.appendChild(t);
+    br.appendChild(t);
+    el.appendChild(img); el.appendChild(br);
   }
   function addControls(inst) {
     if (RM || inst.fx.poster) return;
@@ -255,7 +260,7 @@
     var pz = mk('cpm-pz');
     var setPz = function () {
       pz.setAttribute('aria-pressed', String(!!inst.userPaused));
-      pz.innerHTML = (inst.userPaused ? PLAY : PAUSE) + '<span>' + (inst.userPaused ? (it ? 'Riproduci' : 'Play') : (it ? 'Pausa' : 'Pause')) + '</span>';
+      pz.innerHTML = inst.userPaused ? PLAY : PAUSE; pz.setAttribute('aria-label', inst.userPaused ? (it ? 'Riproduci' : 'Play') : (it ? 'Pausa' : 'Pause')); pz.title = pz.getAttribute('aria-label');
     };
     setPz();
     pz.addEventListener('click', function () {
@@ -266,7 +271,7 @@
     if (inst.fx.sound && inst.el.getAttribute('data-sound') !== 'off') {
       var b = mk('cpm-snd');
       b.setAttribute('aria-pressed', 'false');
-      b.innerHTML = SVG + '<span>' + (it ? 'Suono' : 'Sound') + '</span>';
+      b.innerHTML = SVG; b.setAttribute('aria-label', it ? 'Suono' : 'Sound'); b.title = b.getAttribute('aria-label');
       b.addEventListener('click', function () {
         var ctx = audio();
         if (!ctx) return;
@@ -282,7 +287,7 @@
     injectCss();
     (root || document).querySelectorAll('[data-cpm]').forEach(mount);
   }
-  window.CPM = { define: define, preset: preset, scan: scan, v: '1.2.0' };
+  window.CPM = { define: define, preset: preset, scan: scan, v: '1.3.0' };
   /* presets can be queued before the loader arrives: (window.CPMQ=window.CPMQ||[]).push(['name',{...}]) */
   (window.CPMQ || []).forEach(function (q) { preset(q[0], q[1]); });
   window.CPMQ = { push: function (q) { preset(q[0], q[1]); } };
