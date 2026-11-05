@@ -103,7 +103,7 @@
   /* styles, injected once */
   var css = '.cpm{position:relative;overflow:hidden;contain:layout paint;isolation:isolate;-webkit-tap-highlight-color:transparent}' +
     '.cpm>canvas{position:absolute;inset:0;width:100%;height:100%;display:block}' +
-    '.cpm-poster{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:opacity .8s}' +
+    '.cpm-real{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.cpm>canvas{z-index:1}.cpm-poster{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:opacity .8s}' +
     '.cpm-br{position:absolute;right:16px;bottom:14px;z-index:5;display:flex;flex-direction:column;align-items:flex-end;gap:10px;pointer-events:none}' +
     '.cpm-ctl{position:absolute;right:16px;bottom:14px;z-index:5;display:flex;gap:6px}.cpm-br .cpm-ctl{position:static;pointer-events:auto;flex-direction:column;gap:8px}' +
     '.cpm-ctl button{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;padding:0;border-radius:50%;border:1px solid currentColor;cursor:pointer;opacity:.85;transition:opacity .3s}.cpm-ctl button:hover{opacity:1}' +
@@ -297,7 +297,7 @@
     injectCss();
     (root || document).querySelectorAll('[data-cpm]').forEach(mount);
   }
-  window.CPM = { define: define, preset: preset, scan: scan, v: '1.4.0' };
+  window.CPM = { define: define, preset: preset, scan: scan, v: '1.5.0' };
   /* presets can be queued before the loader arrives: (window.CPMQ=window.CPMQ||[]).push(['name',{...}]) */
   (window.CPMQ || []).forEach(function (q) { preset(q[0], q[1]); });
   window.CPMQ = { push: function (q) { preset(q[0], q[1]); } };

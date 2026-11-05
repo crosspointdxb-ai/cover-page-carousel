@@ -38,6 +38,8 @@ CPM.define('spacetime', function (el, cv, A) {
   video.setAttribute('playsinline', ''); video.setAttribute('muted', '');
   video.crossOrigin = 'anonymous'; video.preload = 'auto';
   video.src = src;
+  var REV = +cfg.reveal || 0, FX = +cfg.fxhold || 7, FD = 1.6;
+  if (REV) { video.className = 'cpm-real'; video.setAttribute('aria-hidden', 'true'); el.insertBefore(video, cv); cv.style.opacity = '0'; }
 
   var common = '#version 300 es\nprecision highp float;precision highp sampler2DArray;' +
     'uniform sampler2DArray T;uniform float uHead,uD,uFill,uTime,uAspC,uAspV,uE,uTilt,uWarp,uAmp,uSmear,uTone;uniform vec2 uRes;in vec2 v;out vec4 o;' + A.NOISE +
@@ -167,6 +169,7 @@ CPM.define('spacetime', function (el, cv, A) {
   function resize(w, h) { cw = w; ch = h; aspC = w / h; g.viewport(0, 0, w, h); }
 
   function frame(t, dt) {
+    if (REV && fill >= 2) { var cyc = REV + FX + 2 * FD, k = t % cyc, o = k < REV ? 0 : k < REV + FD ? (k - REV) / FD : k < REV + FD + FX ? 1 : 1 - (k - REV - FD - FX) / FD; o = o * o * (3 - 2 * o); cv.style.opacity = o.toFixed(3); }
     if (!rvfc && video.currentTime !== lastT) { lastT = video.currentTime; grab(); }
     pulse = Math.max(0, pulse - dt * 0.9);
     var e = echo ? (0.5 - 0.5 * Math.cos(t / cfg.period * 6.2832)) : Math.min(1, pulse);
