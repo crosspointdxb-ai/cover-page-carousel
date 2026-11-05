@@ -104,13 +104,17 @@
   var css = '.cpm{position:relative;overflow:hidden;contain:layout paint;isolation:isolate;-webkit-tap-highlight-color:transparent}' +
     '.cpm>canvas{position:absolute;inset:0;width:100%;height:100%;display:block}' +
     '.cpm-poster{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:opacity .8s}' +
-    '.cpm-snd{position:absolute;right:14px;bottom:14px;z-index:5;display:inline-flex;align-items:center;gap:8px;height:34px;padding:0 14px 0 11px;border-radius:999px;border:1px solid currentColor;background:rgba(127,127,127,.12);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);font:600 10px/1 Inter,system-ui,sans-serif;letter-spacing:.22em;text-transform:uppercase;cursor:pointer;opacity:.82;transition:opacity .3s}' +
-    '.cpm-snd:hover,.cpm-snd:focus-visible{opacity:1}.cpm-snd svg{width:15px;height:15px}.cpm-snd .w{transition:opacity .3s;opacity:0}.cpm-snd[aria-pressed=true] .w{opacity:1}.cpm-snd[aria-pressed=true] .x{opacity:0}' +
-    '@media (max-width:600px){.cpm-snd{right:10px;bottom:10px;height:30px;padding:0 12px 0 9px}}';
+    '.cpm-ctl{position:absolute;right:14px;bottom:14px;z-index:5;display:flex;gap:8px}' +
+    '.cpm-ctl button{display:inline-flex;align-items:center;gap:8px;height:34px;padding:0 14px 0 11px;border-radius:999px;border:1px solid currentColor;font:600 10px/1 Inter,system-ui,sans-serif;letter-spacing:.22em;text-transform:uppercase;cursor:pointer}' +
+    '.cpm-ctl button:focus-visible{outline:2px solid currentColor;outline-offset:2px}.cpm-ctl svg{width:15px;height:15px}' +
+    '.cpm-snd .w{transition:opacity .3s;opacity:0}.cpm-snd[aria-pressed=true] .w{opacity:1}.cpm-snd[aria-pressed=true] .x{opacity:0}' +
+    '@media (max-width:600px){.cpm-ctl{right:10px;bottom:10px;gap:6px}.cpm-ctl button{height:30px;padding:0 12px 0 9px}}';
   function injectCss() {
     if (document.getElementById('cpm-css')) return;
     var st = document.createElement('style'); st.id = 'cpm-css'; st.textContent = css; document.head.appendChild(st);
   }
+  var PAUSE = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></svg>';
+  var PLAY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M8 5l11 7-11 7z"/></svg>';
   var SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z"/><path class="w" d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/><path class="x" d="M17 9.5l5 5M22 9.5l-5 5"/></svg>';
 
   /* settings: module defaults < named preset < data-cfg JSON < single data-* attributes */
@@ -168,11 +172,12 @@
     var fx = null;
     try { fx = factory(el, cv, api); } catch (e) { console.warn('cpm', e); }
     if (!fx) { cv.remove(); el.classList.add('cpm-fallback'); return; }
+    if (fx.poster) { inst.fx = fx; return; }
     inst.fx = fx; inst.cv = cv;
     var ro = new ResizeObserver(function () { size(inst); });
     ro.observe(el);
     size(inst);
-    if (fx.sound && el.getAttribute('data-sound') !== 'off') addSoundButton(inst);
+    addControls(inst);
     if (RM) { fx.frame(fx.still || 3, 0); return; }
     if (inst.visible) play(inst);
   }
@@ -190,7 +195,7 @@
   }
 
   function play(inst) {
-    if (!inst.fx || RM || inst.raf || document.hidden) return;
+    if (!inst.fx || RM || inst.raf || document.hidden || inst.userPaused || inst.fx.poster) return;
     if (inst.fx.wake) inst.fx.wake();
     inst.last = performance.now();
     var loop = function (now) {
@@ -213,29 +218,51 @@
     instances.forEach(function (i) { document.hidden ? pause(i) : (i.visible && play(i)); });
   });
 
-  function addSoundButton(inst) {
-    var it = inst.lang === 'it';
-    var b = document.createElement('button');
-    b.type = 'button'; b.className = 'cpm-snd';
-    b.setAttribute('aria-pressed', 'false');
-    b.innerHTML = SVG + '<span>' + (it ? 'Suono' : 'Sound') + '</span>';
-    b.style.color = inst.fx.ui || '#141414';
-    b.addEventListener('click', function () {
-      var ctx = audio();
-      if (!ctx) return;
-      inst.soundOn = !inst.soundOn;
-      b.setAttribute('aria-pressed', String(inst.soundOn));
-      if (inst.soundOn) { ctx.resume(); inst.fx.sound.init(ctx, inst.t); inst.fx.sound.on(true); }
-      else inst.fx.sound.on(false);
-    });
-    inst.el.appendChild(b);
+  function ctlColors(hex) {
+    /* solid backing for contrast over moving video: light text gets a dark pill, dark text a light pill */
+    var n = parseInt((hex || '#141414').slice(1), 16), r = n >> 16 & 255, gg = n >> 8 & 255, b = n & 255;
+    var light = (0.2126 * r + 0.7152 * gg + 0.0722 * b) > 140;
+    return light ? { c: '#f3efe6', bg: 'rgba(14,13,12,.86)' } : { c: '#141414', bg: 'rgba(250,248,244,.9)' };
   }
-
+  function addControls(inst) {
+    if (RM || inst.fx.poster) return;
+    var it = inst.lang === 'it';
+    var col = ctlColors(inst.fx.ui);
+    var box = document.createElement('div');
+    box.className = 'cpm-ctl';
+    box.style.color = col.c;
+    function mk(cls) { var b = document.createElement('button'); b.type = 'button'; b.className = cls; b.style.background = col.bg; b.style.color = col.c; box.appendChild(b); return b; }
+    var pz = mk('cpm-pz');
+    var setPz = function () {
+      pz.setAttribute('aria-pressed', String(!!inst.userPaused));
+      pz.innerHTML = (inst.userPaused ? PLAY : PAUSE) + '<span>' + (inst.userPaused ? (it ? 'Riproduci' : 'Play') : (it ? 'Pausa' : 'Pause')) + '</span>';
+    };
+    setPz();
+    pz.addEventListener('click', function () {
+      inst.userPaused = !inst.userPaused;
+      setPz();
+      if (inst.userPaused) pause(inst); else if (inst.visible) play(inst);
+    });
+    if (inst.fx.sound && inst.el.getAttribute('data-sound') !== 'off') {
+      var b = mk('cpm-snd');
+      b.setAttribute('aria-pressed', 'false');
+      b.innerHTML = SVG + '<span>' + (it ? 'Suono' : 'Sound') + '</span>';
+      b.addEventListener('click', function () {
+        var ctx = audio();
+        if (!ctx) return;
+        inst.soundOn = !inst.soundOn;
+        b.setAttribute('aria-pressed', String(inst.soundOn));
+        if (inst.soundOn) { ctx.resume(); inst.fx.sound.init(ctx, inst.t); if (inst.raf) inst.fx.sound.on(true); }
+        else inst.fx.sound.on(false);
+      });
+    }
+    inst.el.appendChild(box);
+  }
   function scan(root) {
     injectCss();
     (root || document).querySelectorAll('[data-cpm]').forEach(mount);
   }
-  window.CPM = { define: define, preset: preset, scan: scan, v: '1.0.0' };
+  window.CPM = { define: define, preset: preset, scan: scan, v: '1.1.0' };
   /* presets can be queued before the loader arrives: (window.CPMQ=window.CPMQ||[]).push(['name',{...}]) */
   (window.CPMQ || []).forEach(function (q) { preset(q[0], q[1]); });
   window.CPMQ = { push: function (q) { preset(q[0], q[1]); } };

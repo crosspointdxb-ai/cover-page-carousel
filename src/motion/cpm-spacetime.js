@@ -10,12 +10,18 @@ CPM.define('spacetime', function (el, cv, A) {
     grains: [440, 660, 880, 990, 1320, 1760], ui: echo0 ? '#141414' : '#f3efe6'
   });
   var mode = cfg.mode === 'echo' ? 'echo' : 'tunnel';
-  var g = A.gl2(cv);
-  if (!g) return null;
   var clip = cfg.clip;
   if (!clip) return null;
   var r0 = el.getBoundingClientRect();
   var shape = (r0.width / Math.max(1, r0.height)) < 0.9 ? 'tall' : 'wide';
+  /* poster first: it stays as the fallback when WebGL2 is missing, and is all a reduced motion viewer sees */
+  var poster = document.createElement('img');
+  poster.className = 'cpm-poster'; poster.alt = ''; poster.decoding = 'async';
+  poster.src = clip + '-' + shape + '.webp';
+  el.insertBefore(poster, cv.nextSibling);
+  if (A.RM) { cv.style.display = 'none'; return { resize: function () {}, frame: function () {}, still: 0, ui: cfg.ui, poster: true }; }
+  var g = A.gl2(cv);
+  if (!g) return null;
   var probe = document.createElement('video');
   var ext = probe.canPlayType('video/mp4; codecs="avc1.4d401e"') ? 'mp4' : 'webm';
   var src = clip + '-' + shape + '.' + ext;
@@ -26,12 +32,6 @@ CPM.define('spacetime', function (el, cv, A) {
   var D = cfg.layers | 0;
   var STEP = Math.max(1, cfg.step | 0);
   var N = Math.max(4, cfg.slices | 0);
-
-  /* poster until the first frames are in */
-  var poster = document.createElement('img');
-  poster.className = 'cpm-poster'; poster.alt = ''; poster.decoding = 'async';
-  poster.src = clip + '-' + shape + '.webp';
-  el.insertBefore(poster, cv.nextSibling);
 
   var video = document.createElement('video');
   video.muted = true; video.loop = true; video.playsInline = true;
@@ -158,7 +158,7 @@ CPM.define('spacetime', function (el, cv, A) {
     var pr = video.play();
     if (pr && pr.catch) pr.catch(function () {
       /* Low Power Mode or blocked autoplay: start on first touch */
-      el.addEventListener('pointerdown', function once() { el.removeEventListener('pointerdown', once); video.play(); }, { once: true });
+      document.addEventListener('pointerdown', function once() { document.removeEventListener('pointerdown', once); video.play(); }, { once: true });
     });
   }
 
