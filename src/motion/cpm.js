@@ -157,6 +157,16 @@
       });
     }, { rootMargin: '400px 0px' });
     io.observe(el);
+    /* safety net: a page opened in a background tab can miss the first observer callback */
+    var kick = function () {
+      if (inst.loading || document.hidden) return;
+      var r = el.getBoundingClientRect();
+      if (r.top < innerHeight + 400 && r.bottom > -400) { inst.loading = 1; load(name, function (factory) { start(inst, factory); }); }
+      if (!inst.visible && r.top < innerHeight && r.bottom > 0) inst.visible = true;
+    };
+    setTimeout(kick, 1200);
+    document.addEventListener('visibilitychange', kick);
+    addEventListener('scroll', kick, { passive: true });
     var vo = new IntersectionObserver(function (es) {
       inst.visible = es[es.length - 1].isIntersecting;
       inst.visible ? play(inst) : pause(inst);
@@ -287,7 +297,7 @@
     injectCss();
     (root || document).querySelectorAll('[data-cpm]').forEach(mount);
   }
-  window.CPM = { define: define, preset: preset, scan: scan, v: '1.3.0' };
+  window.CPM = { define: define, preset: preset, scan: scan, v: '1.3.1' };
   /* presets can be queued before the loader arrives: (window.CPMQ=window.CPMQ||[]).push(['name',{...}]) */
   (window.CPMQ || []).forEach(function (q) { preset(q[0], q[1]); });
   window.CPMQ = { push: function (q) { preset(q[0], q[1]); } };
