@@ -4,7 +4,7 @@
 if (window.CPM) return;
 var S = document.currentScript;
 var BASE = (S && S.src) ? S.src.replace(/[^\/]*$/, '') : '';
-var SRI = {"constellation": "sha384-nHuhD0qP3KP+2PrCA6/eEAFMuZxczD8LprNeq83EwwiGNEvJr1G+GPZNApaPOm3C", "ink": "sha384-INZv5xdOEq87uSEQg2q1C+kJUybKJNNQ0qIF88ZJELAsZFxhDXRUoJ70da7ACVah", "spacetime": "sha384-GHB6E0AJqoKrXiI/imbYLeAPKI/J/7Dj2a4KLGjCQ2EfwOYoHGmTPsU5gBoJJKQf"};
+var SRI = {"constellation": "sha384-qPspoKWnut2nS2X6l0r/tT+dp8ZncotnTC9XTe0UnoxV5PvqLSabu6x9cHOlNed0", "ink": "sha384-INZv5xdOEq87uSEQg2q1C+kJUybKJNNQ0qIF88ZJELAsZFxhDXRUoJ70da7ACVah", "spacetime": "sha384-GHB6E0AJqoKrXiI/imbYLeAPKI/J/7Dj2a4KLGjCQ2EfwOYoHGmTPsU5gBoJJKQf"};
 var RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
 var nav = navigator;
 var LOW = (nav.deviceMemory && nav.deviceMemory <= 2) || (nav.connection && nav.connection.saveData) || (nav.hardwareConcurrency && nav.hardwareConcurrency <= 2);
@@ -100,7 +100,10 @@ var css = '.cpm{position:relative;overflow:hidden;contain:layout paint;isolation
 '.cpm-ctl button{display:inline-flex;align-items:center;gap:8px;height:34px;padding:0 14px 0 11px;border-radius:999px;border:1px solid currentColor;font:600 10px/1 Inter,system-ui,sans-serif;letter-spacing:.22em;text-transform:uppercase;cursor:pointer}' +
 '.cpm-ctl button:focus-visible{outline:2px solid currentColor;outline-offset:2px}.cpm-ctl svg{width:15px;height:15px}' +
 '.cpm-snd .w{transition:opacity .3s;opacity:0}.cpm-snd[aria-pressed=true] .w{opacity:1}.cpm-snd[aria-pressed=true] .x{opacity:0}' +
-'@media (max-width:600px){.cpm-ctl{right:10px;bottom:10px;gap:6px}.cpm-ctl button{height:30px;padding:0 12px 0 9px}}';
+'.cpm-logo{position:absolute;left:14px;top:14px;z-index:4;width:clamp(44px,5vw,76px);height:auto;pointer-events:none}' +
+'.cpm-brand{position:absolute;right:14px;bottom:62px;z-index:4;font:600 10px/1 Inter,system-ui,sans-serif;letter-spacing:.3em;text-transform:uppercase;pointer-events:none}.cpm-brand.lo{bottom:14px}' +
+'@media (max-width:600px){.cpm-logo{left:10px;top:10px}.cpm-brand{right:10px;bottom:52px;font-size:9px}.cpm-brand.lo{bottom:10px}' +
+'.cpm-ctl{right:10px;bottom:10px;gap:6px}.cpm-ctl button{height:30px;padding:0 12px 0 9px}}';
 function injectCss() {
 if (document.getElementById('cpm-css')) return;
 var st = document.createElement('style'); st.id = 'cpm-css'; st.textContent = css; document.head.appendChild(st);
@@ -158,12 +161,13 @@ cfg: function (def) { return config(el, def); } };
 var fx = null;
 try { fx = factory(el, cv, api); } catch (e) { console.warn('cpm', e); }
 if (!fx) { cv.remove(); el.classList.add('cpm-fallback'); return; }
-if (fx.poster) { inst.fx = fx; return; }
+if (fx.poster) { inst.fx = fx; addBrand(inst); return; }
 inst.fx = fx; inst.cv = cv;
 var ro = new ResizeObserver(function () { size(inst); });
 ro.observe(el);
 size(inst);
 addControls(inst);
+addBrand(inst);
 if (RM) { fx.frame(fx.still || 3, 0); return; }
 if (inst.visible) play(inst);
 }
@@ -206,6 +210,22 @@ var n = parseInt((hex || '#141414').slice(1), 16), r = n >> 16 & 255, gg = n >> 
 var light = (0.2126 * r + 0.7152 * gg + 0.0722 * b) > 140;
 return light ? { c: '#f3efe6', bg: 'rgba(14,13,12,.86)' } : { c: '#141414', bg: 'rgba(250,248,244,.9)' };
 }
+var LOGO = 'https://cdn.prod.website-files.com/69ac00be18782e76e092ded2/6a8d763730a9d63358419613_coverpage-watermark-ink.png';
+function addBrand(inst) {
+var el = inst.el;
+if (inst.fx.brand === false || el.getAttribute('data-brand') === 'off') return;
+var col = ctlColors(inst.fx.ui);
+var light = col.c !== '#141414';
+var img = document.createElement('img');
+img.className = 'cpm-logo'; img.alt = 'Cover Page Agency'; img.onerror = function () { img.remove(); }; img.decoding = 'async'; img.loading = 'lazy';
+img.src = el.getAttribute('data-logo') || LOGO;
+if (light) img.style.filter = 'invert(1)';
+var t = document.createElement('span');
+t.className = 'cpm-brand' + (el.querySelector('.cpm-ctl') ? '' : ' lo');
+t.textContent = 'Cover Page Agency';
+t.style.color = col.c;
+el.appendChild(img); el.appendChild(t);
+}
 function addControls(inst) {
 if (RM || inst.fx.poster) return;
 var it = inst.lang === 'it';
@@ -244,7 +264,7 @@ function scan(root) {
 injectCss();
 (root || document).querySelectorAll('[data-cpm]').forEach(mount);
 }
-window.CPM = { define: define, preset: preset, scan: scan, v: '1.1.0' };
+window.CPM = { define: define, preset: preset, scan: scan, v: '1.2.0' };
 (window.CPMQ || []).forEach(function (q) { preset(q[0], q[1]); });
 window.CPMQ = { push: function (q) { preset(q[0], q[1]); } };
 if (!('IntersectionObserver' in window) || !('ResizeObserver' in window)) return;

@@ -299,5 +299,5 @@ o.connect(gg); gg.connect(ctx.cpm.master); o.start(at); o.stop(at + 0.4);
 };
 })();
 go(0);
-return { resize: resize, frame: frame, sound: sound, dprCap: 1.75, still: 2.6, ui: '#e8e9ef' };
+return { resize: resize, frame: frame, sound: sound, dprCap: 1.75, still: 2.6, ui: '#e8e9ef', brand: false };
 });

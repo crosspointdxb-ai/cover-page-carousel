@@ -319,5 +319,5 @@ CPM.define('constellation', function (el, cv, A) {
   })();
 
   go(0);
-  return { resize: resize, frame: frame, sound: sound, dprCap: 1.75, still: 2.6, ui: '#e8e9ef' };
+  return { resize: resize, frame: frame, sound: sound, dprCap: 1.75, still: 2.6, ui: '#e8e9ef', brand: false };
 });
