@@ -105,13 +105,13 @@
     '.cpm>canvas{position:absolute;inset:0;width:100%;height:100%;display:block}' +
     '.cpm-poster{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:opacity .8s}' +
     '.cpm-br{position:absolute;right:16px;bottom:14px;z-index:5;display:flex;flex-direction:column;align-items:flex-end;gap:10px;pointer-events:none}' +
-    '.cpm-ctl{position:absolute;right:16px;bottom:14px;z-index:5;display:flex;gap:6px}.cpm-br .cpm-ctl{position:static;pointer-events:auto}' +
+    '.cpm-ctl{position:absolute;right:16px;bottom:14px;z-index:5;display:flex;gap:6px}.cpm-br .cpm-ctl{position:static;pointer-events:auto;flex-direction:column;gap:8px}' +
     '.cpm-ctl button{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;padding:0;border-radius:50%;border:1px solid currentColor;cursor:pointer;opacity:.85;transition:opacity .3s}.cpm-ctl button:hover{opacity:1}' +
     '.cpm-ctl button:focus-visible{outline:2px solid currentColor;outline-offset:2px;opacity:1}.cpm-ctl svg{width:13px;height:13px}' +
     '.cpm-snd .w{transition:opacity .3s;opacity:0}.cpm-snd[aria-pressed=true] .w{opacity:1}.cpm-snd[aria-pressed=true] .x{opacity:0}' +
     '.cpm-logo{position:absolute;left:16px;top:14px;z-index:4;width:clamp(44px,5vw,76px);height:auto;pointer-events:none}' +
     '.cpm-brand{font:600 clamp(13px,1.5vw,22px)/1 Inter,system-ui,sans-serif;letter-spacing:.28em;margin-right:-.28em;text-transform:uppercase;text-shadow:0 1px 10px rgba(0,0,0,.25)}' +
-    '@media (max-width:600px){.cpm-logo{left:12px;top:12px}.cpm-br{right:12px;bottom:12px;gap:8px}.cpm-ctl{right:12px;bottom:12px}.cpm-ctl button{width:26px;height:26px}.cpm-brand{font-size:12px}}';
+    '@media (max-width:600px){.cpm-logo{left:12px;top:12px}.cpm-br .cpm-ctl{gap:6px}.cpm-br{right:12px;bottom:12px;gap:8px}.cpm-ctl{right:12px;bottom:12px}.cpm-ctl button{width:26px;height:26px}.cpm-brand{font-size:12px}}';
   function injectCss() {
     if (document.getElementById('cpm-css')) return;
     var st = document.createElement('style'); st.id = 'cpm-css'; st.textContent = css; document.head.appendChild(st);
@@ -247,7 +247,7 @@
     var img = document.createElement('img');
     img.className = 'cpm-logo'; img.alt = 'Cover Page Agency'; img.onerror = function () { img.remove(); }; img.decoding = 'async'; img.loading = 'lazy';
     img.src = el.getAttribute('data-logo') || LOGO;
-    if (light) img.style.filter = 'invert(1)';
+    img.style.filter = 'invert(1) drop-shadow(0 1px 6px rgba(0,0,0,.55))';
     var br = document.createElement('div');
     br.className = 'cpm-br';
     var ctl = el.querySelector('.cpm-ctl');
@@ -297,7 +297,7 @@
     injectCss();
     (root || document).querySelectorAll('[data-cpm]').forEach(mount);
   }
-  window.CPM = { define: define, preset: preset, scan: scan, v: '1.3.1' };
+  window.CPM = { define: define, preset: preset, scan: scan, v: '1.4.0' };
   /* presets can be queued before the loader arrives: (window.CPMQ=window.CPMQ||[]).push(['name',{...}]) */
   (window.CPMQ || []).forEach(function (q) { preset(q[0], q[1]); });
   window.CPMQ = { push: function (q) { preset(q[0], q[1]); } };
