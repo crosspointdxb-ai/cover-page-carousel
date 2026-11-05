@@ -4,7 +4,7 @@
 if (window.CPM) return;
 var S = document.currentScript;
 var BASE = (S && S.src) ? S.src.replace(/[^\/]*$/, '') : '';
-var SRI = {"constellation": "sha384-CO2oAcUC53HcfSxJDYGeZ5dayGUyrZzJTvi7DDkpKay9ONypsYaVTvzjn0fzlQYP", "ink": "sha384-INZv5xdOEq87uSEQg2q1C+kJUybKJNNQ0qIF88ZJELAsZFxhDXRUoJ70da7ACVah", "spacetime": "sha384-fm7l9fiVEQynJoeS2wHW4D4hvMKzAKqcIFqFTV1m5AG0okAoo+7uPK8C1az15i+8"};
+var SRI = {"constellation": "sha384-CO2oAcUC53HcfSxJDYGeZ5dayGUyrZzJTvi7DDkpKay9ONypsYaVTvzjn0fzlQYP", "ink": "sha384-INZv5xdOEq87uSEQg2q1C+kJUybKJNNQ0qIF88ZJELAsZFxhDXRUoJ70da7ACVah", "spacetime": "sha384-h4T/48jqGi4Hxp8gmemV/EzK8QHrTWiOQpUGmOzxIWdZoMaZMS6VtgKadyNL0tWA"};
 var RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
 var nav = navigator;
 var LOW = (nav.deviceMemory && nav.deviceMemory <= 2) || (nav.connection && nav.connection.saveData) || (nav.hardwareConcurrency && nav.hardwareConcurrency <= 2);
@@ -278,7 +278,7 @@ function scan(root) {
 injectCss();
 (root || document).querySelectorAll('[data-cpm]').forEach(mount);
 }
-window.CPM = { define: define, preset: preset, scan: scan, v: '1.5.0' };
+window.CPM = { define: define, preset: preset, scan: scan, v: '1.5.1' };
 (window.CPMQ || []).forEach(function (q) { preset(q[0], q[1]); });
 window.CPMQ = { push: function (q) { preset(q[0], q[1]); } };
 if (!('IntersectionObserver' in window) || !('ResizeObserver' in window)) return;

@@ -37,7 +37,7 @@ video.setAttribute('playsinline', ''); video.setAttribute('muted', '');
 video.crossOrigin = 'anonymous'; video.preload = 'auto';
 video.src = src;
 var REV = +cfg.reveal || 0, FX = +cfg.fxhold || 7, FD = 1.6;
-if (REV) { video.className = 'cpm-real'; video.setAttribute('aria-hidden', 'true'); el.insertBefore(video, cv); cv.style.opacity = '0'; }
+if (REV) { video.className = 'cpm-real'; video.setAttribute('aria-hidden', 'true'); el.insertBefore(video, cv); cv.style.opacity = '0'; video.addEventListener('playing', function () { poster.style.opacity = '0'; }); }
 var common = '#version 300 es\nprecision highp float;precision highp sampler2DArray;' +
 'uniform sampler2DArray T;uniform float uHead,uD,uFill,uTime,uAspC,uAspV,uE,uTilt,uWarp,uAmp,uSmear,uTone;uniform vec2 uRes;in vec2 v;out vec4 o;' + A.NOISE +
 'vec2 cover(vec2 uv){vec2 s=uAspC>uAspV?vec2(1.,uAspV/uAspC):vec2(uAspC/uAspV,1.);return (uv-.5)*s+.5;}' +

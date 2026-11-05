@@ -297,7 +297,7 @@
     injectCss();
     (root || document).querySelectorAll('[data-cpm]').forEach(mount);
   }
-  window.CPM = { define: define, preset: preset, scan: scan, v: '1.5.0' };
+  window.CPM = { define: define, preset: preset, scan: scan, v: '1.5.1' };
   /* presets can be queued before the loader arrives: (window.CPMQ=window.CPMQ||[]).push(['name',{...}]) */
   (window.CPMQ || []).forEach(function (q) { preset(q[0], q[1]); });
   window.CPMQ = { push: function (q) { preset(q[0], q[1]); } };
