@@ -13,11 +13,11 @@ Moving pieces with their own sound for coverpageagency.com. No libraries. One sm
 ## Use on a page
 
 ```html
-<div data-cpm="spacetime" data-mode="tunnel" data-clip="https://cdn.jsdelivr.net/gh/crosspointdxb-ai/cover-page-carousel@motion-v1.0.0/dist/motion/clips/cloister" style="height:78vh"></div>
+<div data-cpm="spacetime" data-mode="tunnel" data-clip="https://cdn.jsdelivr.net/gh/crosspointdxb-ai/cover-page-carousel@06b50c7f48b0807c8a02300e28d739bd1bfcc0f7/dist/motion/clips/cloister" style="height:78vh"></div>
 <div data-cpm="spacetime" data-mode="echo" data-clip=".../clips/petals" style="height:78vh"></div>
 <div data-cpm="constellation" data-lang="it" style="height:78vh"></div>
 <div data-cpm="ink" style="height:78vh"></div>
-<script src="https://cdn.jsdelivr.net/gh/crosspointdxb-ai/cover-page-carousel@motion-v1.0.0/dist/motion/cpm.js" defer crossorigin="anonymous" integrity="(see dist/motion/sri.json, key loader)"></script>
+<script src="https://cdn.jsdelivr.net/gh/crosspointdxb-ai/cover-page-carousel@06b50c7f48b0807c8a02300e28d739bd1bfcc0f7/dist/motion/cpm.js" defer crossorigin="anonymous" integrity="(see dist/motion/sri.json, key loader)"></script>
 ```
 
 The container must have a size (height or aspect-ratio): no layout shift.
